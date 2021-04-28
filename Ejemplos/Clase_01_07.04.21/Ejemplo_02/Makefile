@@ -38,4 +38,4 @@ edit:
 	kate ./src/*.asm ./src/*.c ./src/*.cpp ./src/*.h ./src/*.inc ./src/*.lst Makefile linker.lds bochs
 
 bochs:
-	bochs -f bochsrc
+	bochs -f .bochsrc
