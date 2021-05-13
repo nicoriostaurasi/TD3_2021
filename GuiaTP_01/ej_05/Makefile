@@ -18,6 +18,7 @@ LDSCRIPT = linker.ld
 ODFLAGS = -CprsSx --prefix-addresses
 #en objs guardo todos mis objetos elf
 OBJS = $(BINPATH)init32.elf $(BINPATH)reset.elf $(BINPATH)sys_tables.elf $(BINPATH)init.elf $(BINPATH)main.elf $(BINPATH)functions_rom.elf
+
 SRC_NAME = mi_bios
 
 all: $(BINPATH)$(SRC_NAME).bin $(BINPATH)$(SRC_NAME).elf bochs
@@ -58,7 +59,7 @@ $(BINPATH)functions_rom.elf: $(SRCPATH)functions_rom.c
 	$(CC) $(CFLAGS) $< -o $@
 
 bochs:
-	bochs -f bochsrc
+	bochs -f .bochsrc
 
 clean:
 	rm $(BINPATH)*.bin $(BINPATH)*.elf $(BINPATH)*.lst *.map

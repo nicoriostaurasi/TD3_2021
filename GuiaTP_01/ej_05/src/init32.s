@@ -18,9 +18,6 @@ EXTERN  __FUNCTIONS_VMA
 
 GLOBAL start32_launcher
 
-
-GLOBAL start32_launcher
-
 start32_launcher:
     xchg bx,bx
     ;inicializa los selectores de datos

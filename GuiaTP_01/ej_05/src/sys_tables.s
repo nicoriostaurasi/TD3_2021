@@ -1,11 +1,14 @@
-SECTION .sys_tables_progbits
 EXTERN  EXCEPTION_DUMMY
 GLOBAL  CS_SEL_16
 GLOBAL  CS_SEL_32
 GLOBAL  DS_SEL
 GLOBAL  _gdtr
 
+SECTION .sys_tables_progbits
+
 %define BOOT_SEG 0xF0000
+
+
 
 GDT:
 NULL_SEL    equ $-GDT

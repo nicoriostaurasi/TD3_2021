@@ -1,8 +1,10 @@
 USE16                  ;decodifica el codigo para instrucciones de 16 bits
-section .resetVector
 
 EXTERN start16
 GLOBAL reset
+
+section .resetVector
+
 
 reset:
     cli                  ;clear interrupts
@@ -11,4 +13,6 @@ reset:
     halted:
         hlt
         jmp halted
+
+;ALIGN 16
 end:

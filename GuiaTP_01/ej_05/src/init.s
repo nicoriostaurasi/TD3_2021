@@ -1,8 +1,8 @@
-%include "inc/processor-flags.h" 
 
 USE16
 
-section .ROMinit
+section .ROM_init
+%include "inc/processor-flags.h" 
 
 GLOBAL start16
 

@@ -36,8 +36,8 @@ ENTRY (reset)
 
 MEMORY
 {
-    ram (!x) : ORIGIN = 0x00000000, LENGTH = 0XFFFF0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
-    rom (rx) : ORIGIN = 0xFFFF0000, LENGTH = 0xFFFF
+    ram (!x) : ORIGIN = 0x00000000, LENGTH = 0xFFFF0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
+    rom (rx) : ORIGIN = 0xFFFF0000, LENGTH = 64K
 }
 /*
 defino diferentes secciones con diferentes permisos
@@ -55,21 +55,20 @@ SECTIONS
 /*
 defino la seccion de salida segun la seccion de entrada
 */
+
+    .functions __FUNCTIONS_VMA :
+        AT (__FUNCTIONS_LMA)
+        { *(.functions); } > ram
+    __functions_size = SIZEOF(.functions);
+
     .codigo_kernel32 __KERNEL_32_VMA :
         AT (__KERNEL_32_LMA)
         { *(.kernel32); } > ram
     __codigo_kernel32_size = SIZEOF(.codigo_kernel32); 
 
-
-    .functions __FUNCTIONS_VMA :
-        AT (__KERNEL_32_LMA)
-        { *(.functions); } > ram
-    __functions_size = SIZEOF(.functions);
-
     .codigo_init16 __INIT_16_VMA :
         AT (__INIT_16_LMA)
         { *(.ROM_init); } > rom 
-
 
     .codigo_init32 __INIT_32_VMA :
         AT (__INIT_32_LMA)
@@ -77,7 +76,8 @@ defino la seccion de salida segun la seccion de entrada
 
     .functions_rom __FUNCTIONS_ROM_VMA :
         AT (__FUNCTIONS_ROM_LMA)
-        { *(.functions_rom); } > rom
+        { *(.functions_rom);
+          *(.note.gnu.property); } > rom
 
     .data __SYS_TABLES_VMA :
         AT (__SYS_TABLES_LMA)
@@ -91,24 +91,19 @@ defino la seccion de salida segun la seccion de entrada
     Lleno el final de la rom de 16 bits con NOPs
     */
 
-/*    .fill_rom :
+    .fill_rom :
         { FILL(0x90);
-          /*. = ORIGIN(rom) + LENGTH(rom) - 1;*/
-          /*. = 0xFFFFFFFE;*/
- 
- /*          
+          . = ORIGIN(rom) + LENGTH(rom)-1;      
           BYTE(0x90);
         } > rom
-*/
-
 
     /*
     variante a align 16
     */
-    .end_rom 0xFFFFFFFF:
+/*    .end_rom 0xFFFFFFFF:
         AT (0xFFFFFFFF)
         {
             BYTE(0x90);
-        }
+        }*/
     /*el ld no permite escribir en la ultima posición de memoria*/
 }
