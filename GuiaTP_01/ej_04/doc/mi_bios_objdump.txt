@@ -42,10 +42,10 @@ fffffd00 l    d  .data	00000000 .data
 fffffff0 l    d  .codigo_reset	00000000 .codigo_reset
 fffffff8 l    d  .fill_rom	00000000 .fill_rom
 00000000 l    d  .comment	00000000 .comment
-00000000 l    df *ABS*	00000000 src/main.s
+00000000 l    df *ABS*	00000000 src/main.asm
 00300000 l       .codigo_kernel32	00000000 kernel32_init.guard
 00300003 l       .codigo_kernel32	00000000 kernel32_end
-00000000 l    df *ABS*	00000000 src/init.s
+00000000 l    df *ABS*	00000000 src/init16.asm
 ffff000a l       .codigo_init16	00000000 A20_Enable_No_Stack_return
 ffff0046 l       .codigo_init16	00000000 fault_end
 ffff0047 l       .codigo_init16	00000000 A20_Enable_No_Stack
@@ -58,15 +58,15 @@ ffff007b l       .codigo_init16	00000000 A20_Enable_No_Stack.8042_kbrd_en
 ffff0082 l       .codigo_init16	00000000 A20_Enable_No_Stack.empty_8042_in
 ffff0084 l       .codigo_init16	00000000 A20_Enable_No_Stack.a20_enable_no_stack_exit
 ffff0086 l       .codigo_init16	00000000 endcode
-00000000 l    df *ABS*	00000000 src/init32.s
+00000000 l    df *ABS*	00000000 src/init32.asm
 fffff81d l       .codigo_init32	00000000 start32_launcher.stack_init
 fffff872 l       .codigo_init32	00000000 start32_launcher.guard
 00000000 l    df *ABS*	00000000 functions_rom.c
-00000000 l    df *ABS*	00000000 src/sys_tables.s
+00000000 l    df *ABS*	00000000 src/sys_tables.asm
 fffffd00 l       .data	00000000 GDT
 00000000 l       *ABS*	00000000 NULL_SEL
 00000020 l       *ABS*	00000000 GDT_LENGTH
-00000000 l    df *ABS*	00000000 src/reset.s
+00000000 l    df *ABS*	00000000 src/reset.asm
 fffffff5 l       .codigo_reset	00000000 halted
 fffffff8 l       .codigo_reset	00000000 end
 fffffff0 g       *ABS*	00000000 __RESET_LMA
@@ -77,14 +77,14 @@ ffff0000 g       *ABS*	00000000 __INIT_16_LMA
 fffffc00 g       *ABS*	00000000 __FUNCTIONS_ROM_LMA
 00000018 g       *ABS*	00000000 DS_SEL
 fffffff0 g       .codigo_reset	00000000 reset
-1ff08000 g       *ABS*	00000000 __STACK_START_32
+2fff8000 g       *ABS*	00000000 __STACK_START_32
 00000000 g       *ABS*	00000000 __FUNCTIONS_VMA
 ffff0000 g       *ABS*	00000000 __INIT_16_VMA
 fffffd20 g       .data	00000000 _gdtr
 fffffd00 g       *ABS*	00000000 __SYS_TABLES_VMA
 00009000 g       *ABS*	00000000 __STACK_START_16
 00300000 g       .codigo_kernel32	00000000 kernel32_init
-1ff08fff g       *ABS*	00000000 __STACK_END_32
+2fff8fff g       *ABS*	00000000 __STACK_END_32
 00300000 g       *ABS*	00000000 __KERNEL_32_VMA
 00000010 g       *ABS*	00000000 CS_SEL_32
 000003ff g       *ABS*	00000000 __STACK_SIZE_32
@@ -118,8 +118,8 @@ Contenido de la sección .codigo_init16:
  ffff0080 8400ffe7 eb84                        ......          
 Contenido de la sección .codigo_init32:
  fffff800 6687db66 b818008e d88ec08e e88ee08e  f..f............
- fffff810 d0bcff8f f01f31c0 b9ff0300 0050e2fd  ......1......P..
- fffff820 bcff8ff0 1f6687db 5589e568 00000000  .....f..U..h....
+ fffff810 d0bcff8f ff2f31c0 b9ff0300 0050e2fd  ...../1......P..
+ fffff820 bcff8fff 2f6687db 5589e568 00000000  ..../f..U..h....
  fffff830 68000000 00680010 ffffe8c1 03000066  h....h.........f
  fffff840 87dbc983 f801752a 6687db55 89e56803  ......u*f..U..h.
  fffff850 00000068 00003000 680020ff ffe89e03  ...h..0.h. .....

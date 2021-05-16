@@ -1,0 +1,45 @@
+
+./bin/mibios.elf:     formato del fichero elf32-i386
+./bin/mibios.elf
+arquitectura: i386, opciones 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+dirección de inicio 0x00000000
+
+Encabezado del Programa:
+    LOAD off    0x00001000 vaddr 0xffff0000 paddr 0xffff0000 align 2**12
+         filesz 0x0000002e memsz 0x0000002e flags r--
+    LOAD off    0x00001ff0 vaddr 0xfffffff0 paddr 0xfffffff0 align 2**12
+         filesz 0x00000010 memsz 0x00000010 flags r--
+
+Secciones:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .ROM_init     0000002e  ffff0000  ffff0000  00001000  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  1 .resetVector  00000010  fffffff0  fffffff0  00001ff0  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+SYMBOL TABLE:
+ffff0000 l    d  .ROM_init	00000000 .ROM_init
+fffffff0 l    d  .resetVector	00000000 .resetVector
+00000000 l    df *ABS*	00000000 src/rom_define.asm
+ffff0000 l       .ROM_init	00000000 idle
+00000000 l    df *ABS*	00000000 src/init16.asm
+0000f000 l       *ABS*	00000000 destino
+0000002e l       *ABS*	00000000 start16_size
+ffff0000 l       .ROM_init	00000000 inicio_start16
+ffff0000 l       .ROM_init	00000000 idle
+ffff0025 l       .ROM_init	00000000 memcopy
+ffff0025 l       .ROM_init	00000000 next
+ffff002d l       .ROM_init	00000000 fault_end
+ffff002e l       .ROM_init	00000000 fin_start16
+00000000 l    df *ABS*	00000000 src/reset.asm
+fffffff0 l       .resetVector	00000000 inicio
+fffffff5 l       .resetVector	00000000 halted
+ffff0003 g       .ROM_init	00000000 start16
+
+
+Contenido de la sección .ROM_init:
+ ffff0000 f4ebfd66 a9000000 00752290 bc0030b8  ...f.....u"...0.
+ ffff0010 00008ec0 bf00f0be 0000b92e 00e80500  ................
+ ffff0020 ea00f000 002e8a04 aa46e2f9 c3f4      .........F....  
+Contenido de la sección .resetVector:
+ fffffff0 fafce90e 00f4ebfd 90909090 90909090  ................

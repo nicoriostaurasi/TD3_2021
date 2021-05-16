@@ -1,0 +1,75 @@
+Encabezado ELF:
+  Mágico:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Clase:                             ELF32
+  Datos:                             complemento a 2, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  Versión ABI:                       0
+  Tipo:                              EXEC (Fichero ejecutable)
+  Máquina:                           Intel 80386
+  Versión:                           0x1
+  Dirección del punto de entrada:               0x0
+  Inicio de encabezados de programa:          52 (bytes en el fichero)
+  Inicio de encabezados de sección:          8672 (bytes en el fichero)
+  Opciones:                          0x0
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         2
+  Size of section headers:           40 (bytes)
+  Number of section headers:         6
+  Section header string table index: 5
+
+Encabezados de Sección:
+  [Nr] Nombre            Tipo            Direc    Desp   Tam    ES Opt En Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .ROM_init         PROGBITS        ffff0000 001000 00002e 00   A  0   0  1
+  [ 2] .resetVector      PROGBITS        fffffff0 001ff0 000010 00   A  0   0 16
+  [ 3] .symtab           SYMTAB          00000000 002000 000120 10      4  17  4
+  [ 4] .strtab           STRTAB          00000000 002120 00008b 00      0   0  1
+  [ 5] .shstrtab         STRTAB          00000000 0021ab 000032 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  p (processor specific)
+
+No hay grupos de sección en este fichero.
+
+Encabezados de Programa:
+  Tipo           Desplaz  DirVirt    DirFísica  TamFich TamMem  Opt Alin
+  LOAD           0x001000 0xffff0000 0xffff0000 0x0002e 0x0002e R   0x1000
+  LOAD           0x001ff0 0xfffffff0 0xfffffff0 0x00010 0x00010 R   0x1000
+
+ mapeo de Sección a Segmento:
+  Segmento Secciones...
+   00     .ROM_init 
+   01     .resetVector 
+
+No hay sección dinámica en este fichero.
+
+No hay reubicaciones en este fichero.
+
+The decoding of unwind sections for machine type Intel 80386 is not currently supported.
+
+Symbol table '.symtab' contains 18 entries:
+   Num:    Valor  Tam  Tipo    Unión  Vis      Nombre Ind
+     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+     1: ffff0000     0 SECTION LOCAL  DEFAULT    1 
+     2: fffffff0     0 SECTION LOCAL  DEFAULT    2 
+     3: 00000000     0 FILE    LOCAL  DEFAULT  ABS src/rom_define.asm
+     4: ffff0000     0 NOTYPE  LOCAL  DEFAULT    1 idle
+     5: 00000000     0 FILE    LOCAL  DEFAULT  ABS src/init16.asm
+     6: 0000f000     0 NOTYPE  LOCAL  DEFAULT  ABS destino
+     7: 0000002e     0 NOTYPE  LOCAL  DEFAULT  ABS start16_size
+     8: ffff0000     0 NOTYPE  LOCAL  DEFAULT    1 inicio_start16
+     9: ffff0000     0 NOTYPE  LOCAL  DEFAULT    1 idle
+    10: ffff0025     0 NOTYPE  LOCAL  DEFAULT    1 memcopy
+    11: ffff0025     0 NOTYPE  LOCAL  DEFAULT    1 next
+    12: ffff002d     0 NOTYPE  LOCAL  DEFAULT    1 fault_end
+    13: ffff002e     0 NOTYPE  LOCAL  DEFAULT    1 fin_start16
+    14: 00000000     0 FILE    LOCAL  DEFAULT  ABS src/reset.asm
+    15: fffffff0     0 NOTYPE  LOCAL  DEFAULT    2 inicio
+    16: fffffff5     0 NOTYPE  LOCAL  DEFAULT    2 halted
+    17: ffff0003     0 NOTYPE  GLOBAL DEFAULT    1 start16
+
+No se encontró información de versión en este fichero.

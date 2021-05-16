@@ -14,12 +14,12 @@ CFLAGS = -c -m32 -fno-stack-protector -fno-asynchronous-unwind-tables -Wall -fno
 
 LDFLAGS = -z max-page-size=0x01000 --oformat=binary -m elf_i386
 
-LDSCRIPT = mibios.ld
+LDSCRIPT = linker.ld
 ODFLAGS = -CprsSx --prefix-addresses
 #en objs guardo todos mis objetos elf
-OBJS = $(BINPATH)mibios.elf
+OBJS = $(BINPATH)init32.elf $(BINPATH)reset.elf $(BINPATH)sys_tables.elf $(BINPATH)init16.elf $(BINPATH)main.elf $(BINPATH)functions_rom.elf
 
-SRC_NAME = mibios
+SRC_NAME = mi_bios
 
 all: $(BINPATH)$(SRC_NAME).bin $(BINPATH)$(SRC_NAME).elf bochs
 	mkdir -p doc
@@ -34,15 +34,40 @@ $(BINPATH)$(SRC_NAME).bin: $(OBJS)
 $(BINPATH)$(SRC_NAME).elf: $(OBJS)
 	ld -z max-page-size=0x01000 -m elf_i386 -T $(LDSCRIPT) $(OBJS) -o $@
 
-$(BINPATH)mibios.elf: $(SRCPATH)mibios.asm
+$(BINPATH)main.elf: $(SRCPATH)main.asm
 	@echo Generando $@
 	mkdir -p bin
 	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)sys_tables.elf: $(SRCPATH)sys_tables.asm
+	@echo Generando $@
+	mkdir -p bin
+	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)reset.elf: $(SRCPATH)reset.asm
+	@echo Generando $@
+	mkdir -p bin
+	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)init16.elf: $(SRCPATH)init16.asm
+	@echo Generando $@
+	mkdir -p bin
+	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)init32.elf: $(SRCPATH)init32.asm
+	@echo Generando $@
+	mkdir -p bin
+	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)functions_rom.elf: $(SRCPATH)functions_rom.c
+	@echo Generando $@
+	mkdir -p bin
+	$(CC) $(CFLAGS) $< -o $@
 
 bochs:
 	@echo llamando a bochs
 	bochs -f .bochsrc
 
 clean:
-	@echo limpiando carpeta
+	@echo limpiando carpeta..
 	rm $(BINPATH)*.bin $(BINPATH)*.elf $(BINPATH)*.lst *.map

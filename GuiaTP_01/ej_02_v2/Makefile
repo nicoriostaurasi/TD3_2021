@@ -14,10 +14,10 @@ CFLAGS = -c -m32 -fno-stack-protector -fno-asynchronous-unwind-tables -Wall -fno
 
 LDFLAGS = -z max-page-size=0x01000 --oformat=binary -m elf_i386
 
-LDSCRIPT = mibios.ld
+LDSCRIPT = linker.ld
 ODFLAGS = -CprsSx --prefix-addresses
 #en objs guardo todos mis objetos elf
-OBJS = $(BINPATH)mibios.elf
+OBJS = $(BINPATH)rom_define.elf $(BINPATH)reset.elf $(BINPATH)init16.elf
 
 SRC_NAME = mibios
 
@@ -34,15 +34,26 @@ $(BINPATH)$(SRC_NAME).bin: $(OBJS)
 $(BINPATH)$(SRC_NAME).elf: $(OBJS)
 	ld -z max-page-size=0x01000 -m elf_i386 -T $(LDSCRIPT) $(OBJS) -o $@
 
-$(BINPATH)mibios.elf: $(SRCPATH)mibios.asm
+$(BINPATH)reset.elf: $(SRCPATH)reset.asm
 	@echo Generando $@
 	mkdir -p bin
 	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)rom_define.elf: $(SRCPATH)rom_define.asm
+	@echo Generando $@
+	mkdir -p bin
+	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)init16.elf: $(SRCPATH)init16.asm
+	@echo Generando $@
+	mkdir -p bin
+	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
+
 
 bochs:
 	@echo llamando a bochs
 	bochs -f .bochsrc
 
 clean:
-	@echo limpiando carpeta
+	@echo limpiando carpeta..
 	rm $(BINPATH)*.bin $(BINPATH)*.elf $(BINPATH)*.lst *.map

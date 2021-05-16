@@ -21,7 +21,7 @@ start16:
     jmp A20_Enable_No_Stack
 A20_Enable_No_Stack_return:
 
-    xchg bx,bx
+    ;xchg bx,bx
 
     xor eax,eax
     mov cr3,eax         ;invalidar la TLB
@@ -39,14 +39,14 @@ A20_Enable_No_Stack_return:
     mov cr0,eax
     wbinvd
 
-    xchg bx,bx
+    ;xchg bx,bx
     lgdt [_gdtr]
 
     ;establece el up en MP
     smsw ax
     or   ax, X86_CR0_PE
     lmsw ax
-    xchg bx,bx
+    ;xchg bx,bx
     jmp dword CS_SEL_32:start32_launcher
 
     fault_end:

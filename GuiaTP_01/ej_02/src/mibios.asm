@@ -51,4 +51,3 @@ init_size EQU $ - init_bootstrap
 		;* Luego de esta macro usar se puede definir un stack y llamar 
 		;* a las rutinas que se necesite ...
 %endmacro
-

@@ -35,31 +35,39 @@ $(BINPATH)$(SRC_NAME).elf: $(OBJS)
 	ld -z max-page-size=0x01000 -m elf_i386 -T $(LDSCRIPT) $(OBJS) -o $@
 
 $(BINPATH)main.elf: $(SRCPATH)main.s
+	@echo Generando $@
 	mkdir -p bin
 	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
 
 $(BINPATH)sys_tables.elf: $(SRCPATH)sys_tables.s
+	@echo Generando $@
 	mkdir -p bin
 	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
 
 $(BINPATH)reset.elf: $(SRCPATH)reset.s
+	@echo Generando $@
 	mkdir -p bin
 	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
 
 $(BINPATH)init.elf: $(SRCPATH)init.s
+	@echo Generando $@
 	mkdir -p bin
 	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
 
 $(BINPATH)init32.elf: $(SRCPATH)init32.s
+	@echo Generando $@
 	mkdir -p bin
 	$(AC) $(AFLAGS) $< -o $@ -l $@.lst
 
 $(BINPATH)functions_rom.elf: $(SRCPATH)functions_rom.c
+	@echo Generando $@
 	mkdir -p bin
 	$(CC) $(CFLAGS) $< -o $@
 
 bochs:
+	@echo llamando a bochs
 	bochs -f .bochsrc
 
 clean:
+	@echo limpiando carpeta..
 	rm $(BINPATH)*.bin $(BINPATH)*.elf $(BINPATH)*.lst *.map
