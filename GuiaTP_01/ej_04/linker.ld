@@ -11,14 +11,14 @@ ENTRY (reset)
     /*__BOOT_SEG = 0xF0000;*/
     /*-----------------VMA-----------------*/
     /*Rutinas*/
-    __FUNCTIONS_VMA         = 0x00000000; /*tengo los saltos referenciados a 0*/
+    __FUNCTIONS_VMA         = 0x0010000; /*tengo los saltos referenciados a 0*/
     
     /*Kernel*/
-    __KERNEL_32_VMA         = 0x00300000;
+    __KERNEL_32_VMA         = 0x00202000;
     
     /*Stack 32*/
-    __STACK_START_32        = 0x2FF08000;
-    __STACK_END_32          = 0x2FF08FFF;
+    __STACK_START_32        = 0x2FFF8000;
+    __STACK_END_32          = 0x2FFF8FFF;
     __STACK_SIZE_32 = ((__STACK_END_32 - __STACK_START_32) / 4); /*32b word*/
     
     /*Init ROM*/
@@ -44,7 +44,7 @@ ENTRY (reset)
 
 MEMORY
 {
-    ram (!x) : ORIGIN = 0x00000000, LENGTH = 0xFFFF0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
+    ram (wx) : ORIGIN = 0x00000000, LENGTH = 0xFFFF0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
     rom (rx) : ORIGIN = 0xFFFF0000, LENGTH = 64K
 }
 /*

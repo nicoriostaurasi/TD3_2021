@@ -36,7 +36,9 @@ start32_launcher:
         push eax
         loop .stack_init
     mov esp,__STACK_END_32
+  
     ;desempaqueto la rom
+    xchg bx,bx                  ;MB(1)
     push ebp
     mov ebp,esp
     push __functions_size
@@ -44,26 +46,26 @@ start32_launcher:
     push __FUNCTIONS_LMA
     call __fast_memcpy_rom
     leave                       
-    xchg bx,bx                  ;MB(1)
+    xchg bx,bx                  ;MB(2)
     cmp eax,1
     jne .guard
 
     ;desempaqueto la rom
+    xchg bx,bx                  ;MB(3)
     push ebp
     mov ebp,esp
     push __codigo_kernel32_size     ;0x06
     push __KERNEL_32_VMA
     push __KERNEL_32_LMA
     call __fast_memcpy_rom
-
     leave
-    xchg bx,bx                  ;MB(2)
+    xchg bx,bx                  ;MB(4)
     cmp eax,1
     jne .guard
+
 
     jmp CS_SEL_32:kernel32_init
 
     .guard:
-        xchg bx,bx                  ;MB(3)
         hlt
         jmp .guard
