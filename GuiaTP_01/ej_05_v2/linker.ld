@@ -5,17 +5,31 @@ ENTRY (reset)
 
     __EH_FRAME = 0x00060000; /*seccion para c y c++ exception handling*/
     __DATA_NO_INIT = 0x00050000; 
+
     __STACK_START_16 = 0x9000;  /*SS=0x9000*/
     __STACK_END_16 = 0x9FFF;
     
-    /*__BOOT_SEG = 0xF0000;*/
+    /*
+    Mapa de memoria a seguir:
+
+        *Sys_tables      0x0000-0000
+        *Teclado + ISR   0x0010-0000
+        *Datos           0x0021-0000
+        *Kernel          0x0020-2000
+        *Stack           0x2FF8-0000
+        *Init ROM        0xFFFF-0000
+        *Reset Vector    0xFFFF-FFF0    
+    
+    */  
     /*-----------------VMA-----------------*/
-    __SYS_TABLES_32_VMA        = 0x00000000; /*donde guardo la GDT*/
+    __SYS_TABLES_32_VMA     = 0x00000000; /*donde guardo la IDT32+GDT32*/
+    
     /*Rutinas*/
     __FUNCTIONS_VMA         = 0x00010000; /*tengo los saltos referenciados a 0*/
     
     /*Teclado + ISR*/
     __TECLADO_ISR_VMA       = 0x00100000;
+    
     /*Kernel*/
     __KERNEL_32_VMA         = 0x00202000;
     
@@ -63,7 +77,6 @@ Longitud rom: 64kb antes del final
 
 Puedo colocar mas secciones del mapa de memoria
 */
-
 SECTIONS
 {
 /*
@@ -79,7 +92,6 @@ defino la seccion de salida segun la seccion de entrada
         AT (__TECLADO_ISR_LMA)
         { *(.teclado_and_ISR)} > ram 
     __teclados_isr_size = SIZEOF(.teclados_isr);
-
     
     .functions __FUNCTIONS_VMA :
         AT (__FUNCTIONS_LMA)
@@ -102,7 +114,8 @@ defino la seccion de salida segun la seccion de entrada
     .functions_rom __FUNCTIONS_ROM_VMA :
         AT (__FUNCTIONS_ROM_LMA)
         { *(.functions_rom);
-          *(.note.gnu.property); } > rom
+          *(.note.gnu.property);
+          *(.utils32) } > rom
 
     .sys_tables_16 __SYS_TABLES_16_VMA :
         AT (__SYS_TABLES_16_LMA)

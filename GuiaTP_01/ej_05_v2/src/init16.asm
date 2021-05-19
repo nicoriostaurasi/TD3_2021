@@ -1,4 +1,3 @@
-
 USE16
 
 section .ROM_init
@@ -47,15 +46,12 @@ A20_Enable_No_Stack_return:
     smsw ax
     or   ax, X86_CR0_PE
     lmsw ax
-    ;xchg bx,bx
     ;Salto a la inicializacion de 32 bits
-    nop 
-    nop 
-    nop
     jmp dword CS_SEL_16:start32_launcher
 
     fault_end:
         hlt
+
 
 A20_Enable_No_Stack:
 

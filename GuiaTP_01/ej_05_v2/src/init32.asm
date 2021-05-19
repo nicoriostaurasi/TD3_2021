@@ -1,30 +1,38 @@
 USE32
 section .start32
 
+EXTERN  CS_SEL_32
 EXTERN  DS_SEL_16
+
 EXTERN  __STACK_END_32
 EXTERN  __STACK_SIZE_32
-EXTERN  CS_SEL_32
+
 EXTERN  kernel32_init
-EXTERN  __KERNEL_32_LMA
+
 EXTERN  __codigo_kernel32_size
 EXTERN  __fast_memcpy
 EXTERN  __fast_memcpy_rom
+
 EXTERN  kernel32_code_size
-EXTERN  __functions_size
-EXTERN  __FUNCTIONS_LMA
 EXTERN  __KERNEL_32_VMA
+EXTERN  __KERNEL_32_LMA
+
+EXTERN  __functions_size
 EXTERN  __FUNCTIONS_VMA
+EXTERN  __FUNCTIONS_LMA
+
 EXTERN  __sys_tables_size
 EXTERN  __SYS_TABLES_32_VMA
 EXTERN  __SYS_TABLES_32_LMA
+
 EXTERN  __teclados_isr_size
 EXTERN  __TECLADO_ISR_VMA
 EXTERN  __TECLADO_ISR_LMA
 
+EXTERN init_pic
+
 EXTERN  _gdtr
 EXTERN  _idtr
-
 
 GLOBAL start32_launcher
 
@@ -48,7 +56,12 @@ start32_launcher:
         push eax
         loop .stack_init
     mov esp,__STACK_END_32
-  
+    
+    ;Llamo a reprogramar los pics
+    ;xchg bx,bx
+    call init_pic
+    ;xchg bx,bx
+    
     ;desempaqueto la ROM y llevo las SYSTABLES DE 32 a RAM
     ;xchg bx,bx                  ;MB(1)
     push ebp
@@ -87,7 +100,7 @@ start32_launcher:
     push __codigo_kernel32_size
     push __KERNEL_32_VMA
     push __KERNEL_32_LMA
-    call __fast_memcpy_rom
+    call __fast_memcpy
     leave
     ;xchg bx,bx                  ;MB(6)
     cmp eax,1
@@ -99,7 +112,7 @@ start32_launcher:
     push __teclados_isr_size
     push __TECLADO_ISR_VMA
     push __TECLADO_ISR_LMA
-    call __fast_memcpy_rom
+    call __fast_memcpy
     leave
     ;xchg bx,bx                  ;MB(8)
     cmp eax,1
@@ -111,5 +124,3 @@ start32_launcher:
     .guard:
         hlt
         jmp .guard
-
-    

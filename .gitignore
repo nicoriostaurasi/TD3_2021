@@ -18,6 +18,7 @@
 !*.bochsrc
 !*.dts
 !*.gitignore
+!*.md
 # Unignore all dirs
 !*/
 *.mod.c
