@@ -3,11 +3,11 @@ USE16
 
 section .ROM_init
 %include "inc/processor-flags.h" 
-
+%include "inc/utils.h"
 GLOBAL start16
 
-EXTERN _gdtr
-EXTERN CS_SEL_32
+EXTERN _gdtr16
+EXTERN CS_SEL_16
 EXTERN start32_launcher
 EXTERN __STACK_START_16
 EXTERN __STACK_END_16
@@ -41,25 +41,21 @@ A20_Enable_No_Stack_return:
 
     ;xchg bx,bx
     ;cargo la GDT
-    lgdt [_gdtr]
-
+    lgdt [_gdtr16]
+    
     ;establece el up en MP
     smsw ax
     or   ax, X86_CR0_PE
     lmsw ax
     ;xchg bx,bx
     ;Salto a la inicializacion de 32 bits
-    jmp dword CS_SEL_32:start32_launcher
+    nop 
+    nop 
+    nop
+    jmp dword CS_SEL_16:start32_launcher
 
     fault_end:
         hlt
-
-%define PORT_A_8042    0x60
-%define CTRL_PORT_8042 0x64
-%define KEYB_DIS       0xAD
-%define KEYB_EN        0xAE
-%define READ_OUT_8042  0xD0
-%define WRITE_OUT_8042 0xD1
 
 A20_Enable_No_Stack:
 

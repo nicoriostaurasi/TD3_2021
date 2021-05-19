@@ -10,9 +10,12 @@ ENTRY (reset)
     
     /*__BOOT_SEG = 0xF0000;*/
     /*-----------------VMA-----------------*/
-    /*Rutinas*/ 
-    __FUNCTIONS_VMA         = 0x0010000; /*tengo los saltos referenciados a 0*/
+    __SYS_TABLES_32_VMA        = 0x00000000; /*donde guardo la GDT*/
+    /*Rutinas*/
+    __FUNCTIONS_VMA         = 0x00010000; /*tengo los saltos referenciados a 0*/
     
+    /*Teclado + ISR*/
+    __TECLADO_ISR_VMA       = 0x00100000;
     /*Kernel*/
     __KERNEL_32_VMA         = 0x00202000;
     
@@ -25,20 +28,23 @@ ENTRY (reset)
     __INIT_16_VMA           = 0xFFFF0000;
     __INIT_32_VMA           = 0xFFFFF800;
     __FUNCTIONS_ROM_VMA     = 0xFFFFFC00;
-    __SYS_TABLES_VMA        = 0xFFFFFD00; /*donde guardo la GDT*/
+    __SYS_TABLES_16_VMA     = 0xFFFFFD00;; /*donde guardo la GDT*/
     
     /*Vector de Reset*/
     __RESET_VMA             = 0xFFFFFFF0;
     
     /*-----------------LMA-----------------*/
     __INIT_16_LMA           = 0xFFFF0000; 
-
+   
     __FUNCTIONS_LMA         = 0xFFFF1000; /*se ensambla en otra zona*/
     __KERNEL_32_LMA         = 0xFFFF2000;
+    
+    __SYS_TABLES_32_LMA     = 0xFFFF3000;
+    __TECLADO_ISR_LMA       = 0xFFFF4000;
 
     __INIT_32_LMA           = 0xFFFFF800;    
     __FUNCTIONS_ROM_LMA     = 0xFFFFFC00;
-    __SYS_TABLES_LMA        = 0xFFFFFD00;
+    __SYS_TABLES_16_LMA     = 0xFFFFFD00;
     __RESET_LMA             = 0xFFFFFFF0;
 
 
@@ -63,15 +69,27 @@ SECTIONS
 /*
 defino la seccion de salida segun la seccion de entrada
 */
-    .codigo_kernel32 __KERNEL_32_VMA :
-        AT (__KERNEL_32_LMA)
-        { *(.kernel32); } > ram
-    __codigo_kernel32_size = SIZEOF(.codigo_kernel32); 
+    .sys_tables_32 __SYS_TABLES_32_VMA :
+        AT (__SYS_TABLES_32_LMA)
+        { *(.sys_table_idt_32);
+          *(.sys_table_gdt_32);} > ram 
+    __sys_tables_size = SIZEOF(.sys_tables_32);
 
+    .teclados_isr __TECLADO_ISR_VMA :
+        AT (__TECLADO_ISR_LMA)
+        { *(.teclado_and_ISR)} > ram 
+    __teclados_isr_size = SIZEOF(.teclados_isr);
+
+    
     .functions __FUNCTIONS_VMA :
         AT (__FUNCTIONS_LMA)
         { *(.functions); } > ram
     __functions_size = SIZEOF(.functions);
+
+    .codigo_kernel32 __KERNEL_32_VMA :
+        AT (__KERNEL_32_LMA)
+        { *(.kernel32); } > ram
+    __codigo_kernel32_size = SIZEOF(.codigo_kernel32); 
 
     .codigo_init16 __INIT_16_VMA :
         AT (__INIT_16_LMA)
@@ -86,14 +104,13 @@ defino la seccion de salida segun la seccion de entrada
         { *(.functions_rom);
           *(.note.gnu.property); } > rom
 
-    .data __SYS_TABLES_VMA :
-        AT (__SYS_TABLES_LMA)
-        { *(.sys_tables*); } > rom 
+    .sys_tables_16 __SYS_TABLES_16_VMA :
+        AT (__SYS_TABLES_16_LMA)
+        { *(.sys_table_gdt_16);} > rom 
 
     .codigo_reset __RESET_VMA :
         AT (__RESET_LMA)
         { *(.resetVector); } > rom 
-
 
     .fill_rom :
         { FILL(0x90);

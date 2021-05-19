@@ -6,5 +6,6 @@ GLOBAL kernel32_init
 kernel32_init:
 
     .guard:
+    xchg bx,bx      ;MB(5)
     hlt
     jmp .guard
