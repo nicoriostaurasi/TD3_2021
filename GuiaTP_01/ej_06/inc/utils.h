@@ -9,3 +9,14 @@
 %define TECLA_S	    0x9F
 %define TECLA_A	    0x9E
 %define TECLA_ESC   0x81
+%define TECLA_ENTER 0x9C
+%define TECLA_1     0x82
+%define TECLA_2     0x83
+%define TECLA_3     0x84
+%define TECLA_4     0x85
+%define TECLA_5     0x86
+%define TECLA_6     0x87
+%define TECLA_7     0x88
+%define TECLA_8     0x89
+%define TECLA_9     0x8A
+%define TECLA_0     0x8B

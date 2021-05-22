@@ -1,6 +1,6 @@
-# Ejercicio 5 - Configuración del Sistema de Interrupciones
+# Ejercicio 6 - Interrupciones de Hardware
 
-## Repositorio del TP#01-05
+## Repositorio del TP#01-06
 
 ## Estructura de la carpeta
 
@@ -19,11 +19,11 @@
 
 ## Acceso rapido de la carpeta
 
-* [Doc](/GuiaTP_01/ej_05_v2/doc/)
+* [Doc](/GuiaTP_01/ej_06/doc/)
 
-* [Inc](/GuiaTP_01/ej_05_v2/inc/)
+* [Inc](/GuiaTP_01/ej_06/inc/)
 
-* [Src](/GuiaTP_01/ej_05_v2/src/)
+* [Src](/GuiaTP_01/ej_06/src/)
 
 * [.bochsrc](.bochsrc)
 
@@ -37,27 +37,22 @@
 
 * **functions_rom.c**: Contiene la rutina copia en memoria quemada en ROM. [Fuente](src/functions_rom.c)
 
-* **functions.c**: Contiene la rutina de copia en memoria, carga una determinada GDT según una determinada VMA, carga una determinada IDT según una determinada VMA. [Fuente](src/functions.c)
+* **functions.c**: Contiene la rutina de copia en memoria, carga una determinada GDT según una determinada VMA, carga una determinada IDT según una determinada VMA, Funciones de utilidad para el buffer circular de teclado. [Fuente](src/functions.c)
 
 * **init16.asm**: Contiene la rutina de inicialización, gate A20, setea un stack de 16, carga de GDT16 y pasa a modo protegido. [Fuente](src/init16.asm)
 
 * **init32.asm**: Setea los descriptores de segmento, crea un stack de 32 y lo limpia, reprograma los pics y desempaqueta: Sys_Tables, Funciones, kernel y rutinas de interrupcion con teclado. Luego salta al Kernel32 habiendo cargado las idt y gdt de 32. [Fuente](src/init32.asm)
 
-* **isr_keyboard.asm**: Contiene la rutina de lectura de teclado por pooling y los handler de las distintas interrupciones [Fuente](src/isr_keyboard.asm)
+* **isr_keyboard.asm**: Contiene la rutina de lectura de teclado por pooling (no utilizada desde el ej 05) y los handler de las distintas interrupciones (Por ahora solo Timer(*IRQ0*) y Teclado (*IRQ1*) ) [Fuente](src/isr_keyboard.asm)
 
 * **main.asm**: Contiene el flujo principal del programa. [Fuente](src/main.asm)
 
 * **reset.asm**: Contiene el vector de reset. [Fuente](src/reset.asm) 
 
-* **sys_gdt_table.asm**: Contiene la tabla GDT 32. [Fuente](src/sys_gdt_table.asm)
-
 * **sys_gdt_table16.asm**: Contiene la tabla GDT 16.
 [Fuente](src/sys_gdt_table16.asm)
 
-* **sys_idt_table.asm**: Contiene la tabla IDT.
-[Fuente](src/sys_idt_table.asm)
-
-* **utils32.asm**: Contiene rutinas utiles: Programar pics. Cargar una IDT segun la VMA. Cargar un GDT segun la VMA. 
+* **utils32.asm**: Contiene rutinas utiles: Programar pics. Cargar una IDT segun la VMA. Cargar un GDT segun la VMA, Iniciar PIT. 
 [Fuente](src/utils_32.asm)
 
 * **Linker Script**: Mapeo de memoria. [Fuente](linker.ld)
@@ -87,4 +82,3 @@ GNU ld (GNU Binutils for Ubuntu) 2.35.1
 
 ## Observaciones:
 * Se cargaron 2 GDT distintas ya que el flujo no dejaba cargar las IDT. *Una solución a este problema es usar el prefijo o32*
-* Se elimino la carga desde ROM a RAM para las GDT e IDT, los archivos *sys_gdt_table.asm* y *sys_idt_table.asm*, pierden utilidad. 

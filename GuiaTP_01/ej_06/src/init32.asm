@@ -35,6 +35,7 @@ EXTERN  __TECLADO_ISR_LMA
 
 EXTERN init_pic
 EXTERN init_mask_pic
+EXTERN init_PIT
 EXTERN cargo_gdt_desde_codigo
 EXTERN cargo_idt_desde_codigo
 
@@ -51,10 +52,13 @@ GLOBAL DS_SEL_32
 NULL_SEL equ 0x0000
 CS_SEL_32 equ 0x0008
 DS_SEL_32 equ 0x0010
+teclado_IRQ equ 0x02
+timer_IRQ equ 0x01
 
 start32_launcher:
     
     ;inicializa los selectores de datos
+    ;xchg bx,bx
     mov ax, DS_SEL_16
     mov ds, ax
     mov es, ax
@@ -84,7 +88,7 @@ start32_launcher:
     leave                       
     ;xchg bx,bx                  ;MB(4)
     cmp eax,1
-    jne .guard
+    jne guard
 
     ;desempaqueto la ROM y llevo el kernel a RAM
     ;xchg bx,bx                  ;MB(5)
@@ -97,7 +101,7 @@ start32_launcher:
     leave
     ;xchg bx,bx                  ;MB(6)
     cmp eax,1
-    jne .guard
+    jne guard
     
     ;desempaqueto la ROM y llevo el Teclado + ISR a RAM
     ;xchg bx,bx                  ;MB(7)
@@ -110,7 +114,7 @@ start32_launcher:
     leave
     ;xchg bx,bx                  ;MB(8)
     cmp eax,1
-    jne .guard
+    jne guard
     
     ;cargo las nuevas gdt y ldt
     ;xchg bx,bx
@@ -126,16 +130,27 @@ start32_launcher:
     ;xchg bx,bx
     call init_pic
     call init_mask_pic
+    
+    HabilitoIRQ1:
     ;xchg bx,bx
-    ;nop
+    in al,0x21
+    xor al,teclado_IRQ
+    out 0x21,al
+
+    call init_PIT
+
+    HabilitoIRQ0:
+    in al,0x21
+    xor al,timer_IRQ
+    out 0x21,al
 
     sti     ;habilito las interrupciones
-
+    
     jmp CS_SEL_32:kernel32_init; me fui al kernel
 
-    .guard:
+    guard:
         hlt
-        jmp .guard
+        jmp guard
 
     ;registros de GDT/IDT nuevos
 

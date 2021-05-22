@@ -10,9 +10,16 @@ USE32
 
 kernel32_init:
     
- ;   xchg bx,bx
- 
+ ;  xchg bx,bx
+    xor eax,eax
+    xor ebx,ebx
+    xor ecx,ecx
+    xor edx,edx
     jmp pool_teclado
+    ciclo
+        nop
+        jmp ciclo
+
 
     bloqueado:
         hlt

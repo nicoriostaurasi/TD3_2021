@@ -5,6 +5,9 @@ EXTERN CS_SEL_32
 
 EXTERN __carga_GDT
 EXTERN __carga_IDT
+EXTERN data_teclado
+EXTERN data_timer
+EXTERN __chequeo_tecla
 
 GLOBAL pool_teclado
 
@@ -25,12 +28,14 @@ GLOBAL ISR16_Handler_MF
 GLOBAL ISR17_Handler_AC
 GLOBAL ISR18_Handler_MC
 GLOBAL ISR19_Handler_XM
+
+GLOBAL IRQ00_Handler
 GLOBAL IRQ01_Handler
 
 section .teclado_and_ISR
 
 USE32
-    pool_teclado:                       ;fuente: https://wiki.osdev.org/%228042%22_PS/2_Controller#Status_Register
+pool_teclado:                       ;fuente: https://wiki.osdev.org/%228042%22_PS/2_Controller#Status_Register
                                         ;https://marte.unican.es/projects/angelmunozcantera/Anexo_Manejo_8042.pdf
     xor eax,eax               	        ;Clean EAX
 	in al,CTRL_PORT_8042            	;Consulto actividad
@@ -167,6 +172,42 @@ ISR19_Handler_XM:
     mov dl,0x13
     hlt
 
+IRQ00_Handler:
+                                        ;clear PIC 
+    ;xchg bx,bx
+    pushad
+    xor eax,eax
+    mov dword eax, [data_timer]
+    inc eax
+    mov dword [data_timer], eax
+
+    mov al, 0x20                        ;limpio la interrupcion del pic 
+    out 0x20, al
+    popad
+    iret
+
 IRQ01_Handler:
-    mov dl,0x21
-    hlt
+    
+    pushad                            ;pusheo EAX para no perder info
+    xor eax,eax               	        ;Clean EAX
+;    xchg bx,bx
+    in al,PORT_A_8042                   ;leo el puerto
+    bt eax,7
+    jnc limpio_buffer
+
+    mov byte [data_teclado],al          ;muevo la tecla al buffer
+
+    push eax
+    call __chequeo_tecla
+    add esp,4
+
+    jmp limpio
+    limpio_buffer:
+    mov byte [data_teclado],0x00        ;reseteo la tecla del buffer
+    
+    limpio:                             ;clear PIC 
+    mov al, 0x20                        ;limpio la interrupcion del pic 
+    out 0x20, al
+
+    popad                             ;devuelvo eax
+    iret

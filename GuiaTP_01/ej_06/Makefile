@@ -19,7 +19,7 @@ ODFLAGS = -CprsSx --prefix-addresses
 #en objs guardo todos mis objetos elf
 OBJS = $(BINPATH)init32.elf $(BINPATH)reset.elf $(BINPATH)init16.elf $(BINPATH)main.elf  $(BINPATH)functions.elf $(BINPATH)functions_rom.elf $(BINPATH)utils_32.elf $(BINPATH)isr_keyboard.elf $(BINPATH)sys_gdt_table16.elf
 #obj temp
-#OBJS = $(BINPATH)reset.elf $(BINPATH)init16.elf $(BINPATH)sys_tables.elf  #$(BINPATH)main.elf  $(BINPATH)functions.elf $(BINPATH)functions_rom.elf
+#OBJS = $(BINPATH)reset.elf $(BINPATH)sys_gdt_table16.elf $(BINPATH)functions.elf
 
 SRC_NAME = mi_bios
 

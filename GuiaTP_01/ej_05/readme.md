@@ -1,0 +1,1 @@
+Ejercicio de clase tomado como ejemplo (no es parte de la entrega)

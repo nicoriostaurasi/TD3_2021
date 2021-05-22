@@ -1,14 +1,8 @@
-;------------------------------------------------------------------------------------------------------------
-;		init_pic
-;
-;	Funcion: 	Inicializa el pic en cascada y le asigna el rango de tipo de interrupcion de 0x20 a 0x27 
-;				y de 0x28 a 0x2F respectivamente.
-;				
-;------------------------------------------------------------------------------------------------------------
 SECTION .utils32
 
 GLOBAL init_pic
 GLOBAL init_mask_pic
+GLOBAL init_PIT
 GLOBAL cargo_gdt_desde_codigo
 GLOBAL cargo_idt_desde_codigo
 
@@ -30,10 +24,20 @@ EXTERN ISR16_Handler_MF
 EXTERN ISR17_Handler_AC
 EXTERN ISR18_Handler_MC
 EXTERN ISR19_Handler_XM
+
+EXTERN IRQ00_Handler
 EXTERN IRQ01_Handler
 
 EXTERN  __carga_GDT
 EXTERN  __carga_IDT
+
+;------------------------------------------------------------------------------------------------------------
+;		init_pic
+;
+;	Funcion: 	Inicializa el pic en cascada y le asigna el rango de tipo de interrupcion de 0x20 a 0x27 
+;				y de 0x28 a 0x2F respectivamente.
+;				
+;------------------------------------------------------------------------------------------------------------
 
 init_pic:
 ;// Inicializacion PIC N#1
@@ -74,13 +78,52 @@ init_pic:
   ret
 
 
+;------------------------------------------------------------------------------------------------------------
+;		init_mask_pic
+;
+;	Funcion: Lee las máscaras de ambos PIC y las pone en 0xFF para deshabilitar todas las irq
+;
+;
+;------------------------------------------------------------------------------------------------------------
 
 init_mask_pic:
-  mov al,0xFF
+  in al,0x21
+  or al,0xFF
   out 0x21,al
+  
+  in al,0xA1
+  or al,0xFF
   out 0xA1,al
+  ret
+
+;------------------------------------------------------------------------------------------------------------
+;		init_PIT
+;
+;	Funcion: 	Inicia el timer del PIC master
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+
+init_PIT:
+
+  ;fuente https://en.wikibooks.org/wiki/X86_Assembly/Programmable_Interval_Timer
+  mov al, 0x36    ;0011 0110    see below   
+  out 0x43, al    ;tell the PIT which channel we're setting
+
+  mov ax, 11932  
+  out 0x40, al    ;send low byte
+  mov al, ah
+  out 0x40, al    ;send high byte
 
   ret
+
+;------------------------------------------------------------------------------------------------------------
+;		cargo_gdt_desde_codigo
+;
+;	Funcion: 	Función para escribir la VMA donde ubico la GDT
+;
+;				
+;------------------------------------------------------------------------------------------------------------
 
 
 cargo_gdt_desde_codigo:
@@ -143,6 +186,14 @@ cargo_gdt_desde_codigo:
     ;xchg bx,bx
 
 ret
+
+;------------------------------------------------------------------------------------------------------------
+;		cargo_idt_desde_codigo
+;
+;	Funcion: 	Función que carga la IDT en VMA.
+;
+;				
+;------------------------------------------------------------------------------------------------------------
 
 cargo_idt_desde_codigo:
   
@@ -293,6 +344,13 @@ cargo_idt_desde_codigo:
   push 0x0000008F ;atributos
   push CS_SEL_32 ;Selector
   push 0x00000013 ;offsetIDT   
+  call __carga_IDT
+  add esp,16
+  
+  push IRQ00_Handler ;offset (handler)
+  push 0x0000008E ;atributos
+  push CS_SEL_32 ;Selector
+  push 0x00000020 ;offsetIDT   
   call __carga_IDT
   add esp,16
 

@@ -17,6 +17,7 @@ Alumno: *Nicolas Gabriel Rios Taurasi*
 Profesor: *Alejandro Furfaro*
 
 Ayudantes:
+- *Gustavo Nudelman* 
 - *Hernán Zbucki*
 - *Luciano Ferreyro*
 - *Nicolas Mahnic*
