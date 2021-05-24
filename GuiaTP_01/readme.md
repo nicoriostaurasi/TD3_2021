@@ -12,7 +12,7 @@
 
 - [x] Ejercicio 6 - 22/05/21
 
-- [ ] Ejercicio 7
+- [x] Ejercicio 7 - 24/05/21
 
 - [ ] Ejercicio 8
 
@@ -37,3 +37,5 @@
 * [Ejercicio 5 - Configuración del Sistema de Interrupciones](/GuiaTP_01/ej_05_v2/)
 
 * [Ejercicio 6 - Interrupciones de Hardware](/GuiaTP_01/ej_06/)
+
+* [Ejercicio 7 - Rutina Temporizada y Controladora de Video](/GuiaTP_01/ej_07/)
