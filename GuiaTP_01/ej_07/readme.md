@@ -87,4 +87,4 @@ GNU ld (GNU Binutils for Ubuntu) 2.35.1
 
 ## Observaciones:
 * Se cargaron 2 GDT distintas ya que el flujo no dejaba cargar las IDT. *Una solución a este problema es usar el prefijo o32*
-* Las instrucciones no permiten realizar el promedio de un numero de 64 bits, por lo que por ahora se calcula la sumatoria y se imprime en hexa.
+* Las instrucciones no permiten realizar el promedio de un numero de 64 bits, por lo que por ahora se calcula la sumatoria y se imprime en hexa. *Solucionado realizando la división bit a bit en un algoritmo en C*

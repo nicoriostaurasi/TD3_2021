@@ -48,18 +48,45 @@ __attribute__(( section(".functions_task01"))) void task_show_VGA(tabla_digitos*
 
 __attribute__(( section(".functions_task01"))) void task_promedio(tabla_digitos* td_p)
 {
-    /*por ahora solo acumula, despues promediare*/
+    /*acumula y promedia*/
     static int i=0;
     td_p->promedio=0x0000000000000000;
-    //td_p->promedio=0xFFFFFFFFFFFFFFFF;
+    td_p->sumatoria=0x0000000000000000;
     for(i=0;i<td_p->indice;i++)
     {
-    td_p->promedio=td_p->promedio+td_p->digito[i];
+    td_p->sumatoria=td_p->sumatoria+td_p->digito[i];
+    }
+    if(td_p->indice == 0)
+    {
+        td_p->promedio=0x00;
+    }
+    else
+    {
+        my_division64_promedio(td_p);
     }
 }
-/*
-D->t
 
+__attribute__(( section(".functions_task01"))) void my_division64_promedio(tabla_digitos* td_p)
+{
+    static byte i=0;
+    static bits64 a64,b64,r64aux,a64aux;         //      a64/b64
+    a64=td_p->sumatoria;   
+    b64=td_p->indice;
+    r64aux=0x0000000000000000;
+    a64aux=0x0000000000000000;
 
-
-*/
+    for(i=0;i<64;i++)
+    {
+        //if
+        a64aux=a64aux | ( ( a64>>(64-1-i) ) & ( 0x01 ) );
+        if(a64aux>=b64)
+        {
+        r64aux=r64aux|0x1;            
+        a64aux=a64aux-b64;
+        }
+        r64aux=r64aux<<1;
+        a64aux=a64aux<<1;
+    }
+    r64aux=r64aux>>1;
+    td_p->promedio=r64aux;
+}

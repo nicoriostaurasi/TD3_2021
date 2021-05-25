@@ -33,9 +33,10 @@ typedef unsigned long long bits64;//64 bits
 typedef struct tabla_digitos        //Se carga en 0x00200000
 {
     bits64 promedio;                // 8
+    bits64 sumatoria;               // 8
     bits64 digito[CANT_DIGITOS];    // 8*100
     byte indice;                    // 1
-}tabla_digitos;                     // 809 BYTES
+}tabla_digitos;                     // 816 BYTES
 
 //https://embeddedartistry.com/blog/2017/05/17/creating-a-circular-buffer-in-c-and-c/
 

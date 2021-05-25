@@ -54,11 +54,9 @@ kernel32_init:
     push __DATOS_TIMER_VMA ;ocupa desde 0x210050 - 0x210056
     call __tiempo_iniciar
     add esp,4
+    
+    fin_codigo_div:
 
-   ; push __DATOS_SCH_VMA
-   ; push __DIGITOS_VMA
-   ; call task01_main
-   ; add esp,8
 
     ciclo:
         hlt
