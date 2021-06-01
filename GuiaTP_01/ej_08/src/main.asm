@@ -27,30 +27,36 @@ section .kernel32
 USE32
 
 %include "inc/utils.h"
+%include "inc/processor-flags.h"
 
 kernel32_init:
-    
+    ;reinicio los GPR
     xor eax,eax
     xor ebx,ebx
     xor ecx,ecx
     xor edx,edx
 
+    ;Inicializo el ring buffer
     push __DATOS_VMA
     call __ring_buffer_init
     add esp,4
-
+    
+    ;Limpio el ring buffer
     push __DATOS_VMA
     call __ring_buffer_clear        
     add esp,4
     
+    ;Inicio los digitos
     push __DIGITOS_VMA
     call tabla_digitos_init        
     add esp,4
 
+    ;Inicio la pantalla
     push __VIDEO_VGA
     call __screen_buffer_init         
     add esp,4
 
+    ;Inicio la estructura de tiempo
     push __DATOS_TIMER_VMA ;ocupa desde 0x210050 - 0x210056
     call __tiempo_iniciar
     add esp,4
@@ -58,6 +64,7 @@ kernel32_init:
 
     ciclo:
         hlt
+        ;poolea la tarea 1 viendo si fue llamada por el scheduler
         push __DATOS_SCH_VMA
         push __DIGITOS_VMA
         call task01_main

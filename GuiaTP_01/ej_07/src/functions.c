@@ -39,7 +39,7 @@ __attribute__(( section(".functions"))) void __Scheduler_Handler(byte Tarea,sch_
 __attribute__(( section(".functions"))) void __Systick_Handler(tiempos* tp) 
 {
     tp->base++;
-    if(tp->base>=5)
+    if(tp->base>=50)
     {   
         __Scheduler_Handler(TAREA_1,(sch_buffer*)&__DATOS_SCH_VMA);
         tp->base=0x00;
@@ -295,7 +295,7 @@ __attribute__(( section(".functions"))) void __screen_buffer_init(screen_buffer 
     {
         for(j=0;j<80;j++)//columnas
         {
-        sb_p->buffer[i][j]=0x0F00;//inicializo todo en caracteres blanco
+        sb_p->buffer[i][j]=0x1E00;//inicializo todo en caracteres blanco
         }
     }
      __screen_buffer_print(5,1,sb_p,"Ejercicio N#7 - Rutina Temporizada y Controladora de video",58);
@@ -311,8 +311,8 @@ __attribute__(( section(".functions"))) void __screen_buffer_printc(byte X,byte 
     static byte inY=0;
     static byte inX=0;
     inY=Y;
-    inX=X;
-    sb_p->buffer[inY][inX]=0x0F00|(caracter & 0xFF);
+    inX=X;  
+    sb_p->buffer[inY][inX]=(sb_p->buffer[inY][inX]& 0xFF00)|(caracter & 0xFF);
 }
 
 

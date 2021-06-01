@@ -1,3 +1,13 @@
+/**
+ * @file task01.h
+ * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
+ * @brief Includes de la tarea 1
+ * @version 0.1
+ * @date 2021-05-31
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include "functions.h"
 
 void task01_main(tabla_digitos*,sch_buffer*);

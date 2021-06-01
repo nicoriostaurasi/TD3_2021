@@ -39,3 +39,5 @@
 * [Ejercicio 6 - Interrupciones de Hardware](/GuiaTP_01/ej_06/)
 
 * [Ejercicio 7 - Rutina Temporizada y Controladora de Video](/GuiaTP_01/ej_07/)
+
+* [Ejercicio 8 - Paginación Básica](/GuiaTP_01/ej_08/)

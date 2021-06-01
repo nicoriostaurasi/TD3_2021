@@ -71,8 +71,8 @@ ENTRY (reset)
 
 MEMORY
 {
-    ram (!x) : ORIGIN = 0x00000000, LENGTH = 0xFFFE0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
-    rom (rx) : ORIGIN = 0xFFFE0000, LENGTH = 128K
+    ram (!x) : ORIGIN = 0x00000000, LENGTH = 0xFFFF0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
+    rom (rx) : ORIGIN = 0xFFFF0000, LENGTH = 64K
 }
 /*
 defino diferentes secciones con diferentes permisos

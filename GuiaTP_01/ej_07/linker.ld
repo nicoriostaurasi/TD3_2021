@@ -46,6 +46,8 @@ ENTRY (reset)
     __DATOS_TIMER_VMA       = 0x00210050;
     __DATOS_PROMEDIO_VMA    = 0x00210060;
     __DATOS_SCH_VMA         = 0x00210070;
+    __DATOS_CONVERSION_VMA  = 0x00210090;
+/*    __DATOS_IMPRESION_VMA   = 0x00210110;*/
 
     /*Kernel*/
     __KERNEL_32_VMA         = 0x00202000;
@@ -88,8 +90,8 @@ ENTRY (reset)
 
 MEMORY
 {
-    ram (!x) : ORIGIN = 0x00000000, LENGTH = 0xFFFE0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
-    rom (rx) : ORIGIN = 0xFFFE0000, LENGTH = 128K
+    ram (!x) : ORIGIN = 0x00000000, LENGTH = 0xFFFF0000 /*2 a la 32 (4GB) - 2 a la 16 (64KB)*/
+    rom (rx) : ORIGIN = 0xFFFF0000, LENGTH = 64K
 }
 /*
 defino diferentes secciones con diferentes permisos

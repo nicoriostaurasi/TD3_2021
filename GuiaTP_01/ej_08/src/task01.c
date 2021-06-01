@@ -1,6 +1,28 @@
+/**
+ * @file task01.c
+ * @author Nicolas Rios Tauasi (nicoriostaurasi@frba.utn.edu.ar)
+ * @brief Tarea 1
+ * @version 0.1
+ * @date 2021-05-31
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #include "../inc/task01.h"
 
-/*Funcion Principal*/
+/**
+ * @brief Variable dummy para no harcodear la copia de .data
+ * 
+ */
+__attribute__(( section(".data")))int dummy_task01;
+
+/**
+ * @brief Funcion Principal
+ * @return nada
+ * @param tabla_digitos* td_p
+ * @param sch_buffer* sc_p
+ */
 __attribute__(( section(".functions_task01"))) void task01_main(tabla_digitos* td_p,sch_buffer* sc_p)
 {
     if(sc_p->Tarea1 == 0x01)
@@ -12,6 +34,11 @@ __attribute__(( section(".functions_task01"))) void task01_main(tabla_digitos* t
     }
 }
 
+/**
+ * @brief Funcion que imprime el tiempo en pantalla
+ * @return nada
+ * @param tiempos* t_p
+ */
 __attribute__(( section(".functions_task01"))) void task_show_time(tiempos* t_p)
 {
     static byte seg,min,hor;
@@ -46,7 +73,11 @@ __attribute__(( section(".functions_task01"))) void task_show_time(tiempos* t_p)
 
 }
 
-
+/**
+ * @brief Tarea para mostrar un numero de 64 bits en pantalla
+ * @return nada
+ * @param tabla_digitos* td_p
+ */
 __attribute__(( section(".functions_task01"))) void task_show_VGA_64(tabla_digitos* td_p)
 {
     static byte aux=0;    
@@ -95,7 +126,12 @@ __attribute__(( section(".functions_task01"))) void task_show_VGA_64(tabla_digit
     aux=0;
     }
 }
- /*Funcion que divide operandos de 64*/
+
+/**
+ * @brief Funcion que divide operandos de 64
+ * @return nada
+ * @param data_conv* dc_p
+ */
 __attribute__(( section(".functions_task01")))void my_division64(data_conv* dc_p)
 {
     static byte i=0;
@@ -120,7 +156,11 @@ __attribute__(( section(".functions_task01")))void my_division64(data_conv* dc_p
     dc_p->resultado=r64aux;
 }
 
-/*Funcion que recibe el dato de 64 bits y lo dibuja en pantalla*/
+/**
+ * @brief Funcion que recibe el dato de 64 bits y lo dibuja en pantalla 
+ * @return nada
+ * @param tabla_digitos* td_p
+ */
 __attribute__(( section(".functions_task01"))) void task_show_VGA(tabla_digitos* td_p)
 {
     static dword parte_alta=0,parte_baja=0; //palabras de 32 bits
@@ -154,7 +194,11 @@ __attribute__(( section(".functions_task01"))) void task_show_VGA(tabla_digitos*
 }
 
 
-
+/**
+ * @brief Funcion que calcula el promedio de la tabla de digitos
+ * @return nada
+ * @param tabla_digitos* td_p
+ */
 __attribute__(( section(".functions_task01"))) void task_promedio(tabla_digitos* td_p)
 {
     /*acumula y promedia*/
@@ -183,6 +227,11 @@ __attribute__(( section(".functions_task01"))) void task_promedio(tabla_digitos*
     }    
 }
 
+/**
+ * @brief Funcion que hace la división de un numero de 64 bits, unicamente en la tabla de digitos
+ * @return nada
+ * @param tabla_digitos* td_p
+ */
 __attribute__(( section(".functions_task01"))) void my_division64_promedio(tabla_digitos* td_p)
 {
     static byte i=0;

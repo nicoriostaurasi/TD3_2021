@@ -1,3 +1,13 @@
+/**
+ * @file functions.h
+ * @author Nicolas Rios Taurasi (nicoriostauasi@frba.utn.edu.ar)
+ * @brief  Includes generales de utilidad
+ * @version 0.1
+ * @date 2021-05-31
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #define ERROR_DEFECTO 0
 #define EXITO 1
 #define CANT_GDTS 3
@@ -14,7 +24,7 @@
 #define TECLA_9     0x8A
 #define TECLA_0     0x8B
 #define LONG_BUFFER 16
-#define CANT_DIGITOS 100
+#define CANT_DIGITOS 50
 #define TAREA_1 1
 
 extern long unsigned __SYS_TABLES_32_VMA;
@@ -25,6 +35,8 @@ extern long unsigned __DATOS_SCH_VMA;
 extern long unsigned __DATOS_CONVERSION_VMA;
 extern long unsigned __DATOS_IMPRESION_VMA;
 extern long unsigned __DATOS_TIMER_VMA;
+extern long unsigned __PAGE_TABLES_VMA;
+
 
 //https://en.wikipedia.org/wiki/C_data_types#
 typedef long unsigned direccion;
@@ -115,3 +127,8 @@ void __screen_buffer_printc(byte,byte,screen_buffer *,char);
 void __tiempo_iniciar(tiempos*);
 void __Systick_Handler(tiempos*);
 void __Scheduler_Handler(byte,sch_buffer*);
+void __carga_DTP(dword, bits16, dword, byte, byte, byte, byte, byte, byte, byte);
+void __carga_TP (dword, bits16, dword, byte, byte, byte, byte, byte, byte, byte, byte, byte);
+dword __carga_CR3(dword,dword);
+void __pagina_rom(void);
+void __clean_dir(bits16,dword*);
