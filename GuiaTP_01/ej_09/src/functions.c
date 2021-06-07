@@ -2,7 +2,7 @@
  * @file    functions.c
  * @author  Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
  * @brief   Funciones en c de utilidad general en el TP
- * @version 0.1
+ * @version 1.1
  * @date    2021-05-31
  * 
  * @copyright Copyright (c) 2021
@@ -288,7 +288,7 @@ __attribute__((section(".functions"))) void __Systick_Handler(tiempos *tp)
     tp->base++;
     if (tp->base >= 50)
     {
-        __Scheduler_Handler(TAREA_1, (sch_buffer *)&__DATOS_SCH_VMA);
+        __Scheduler_Handler(TAREA_1, (sch_buffer *)&__DATOS_SCH_VMA_LIN);
         tp->base = 0x00;
         tp->milisegundos = tp->milisegundos + 5;
         if (tp->milisegundos >= 1000)
@@ -358,8 +358,8 @@ __attribute__((section(".functions"))) void __carga_GDT(dword offsetGDT,
                                                         dword atributos)
 {
     //asm("xchg %%bx,%%bx"::);
-    *(&__SYS_TABLES_32_VMA + 2 * offsetGDT) = (limite & 0x0000FFFF) | ((base & 0x0000FFFF) << 16); // parte baja - parte alta
-    *((&__SYS_TABLES_32_VMA + 2 * offsetGDT) + 1) = ((base & 0x00FF0000) >> 16) | ((atributos & 0x000000FF) << 8) | (limite & 0x000F0000) | ((atributos & 0x000000F00) << 12) | (base & 0xFF000000);
+    *(&__SYS_TABLES_32_VMA_LIN + 2 * offsetGDT) = (limite & 0x0000FFFF) | ((base & 0x0000FFFF) << 16); // parte baja - parte alta
+    *((&__SYS_TABLES_32_VMA_LIN + 2 * offsetGDT) + 1) = ((base & 0x00FF0000) >> 16) | ((atributos & 0x000000FF) << 8) | (limite & 0x000F0000) | ((atributos & 0x000000F00) << 12) | (base & 0xFF000000);
 }
 
 /**
@@ -375,8 +375,8 @@ __attribute__((section(".functions"))) void __carga_IDT(dword offsetIDT,
                                                         dword atributos,
                                                         dword offset)
 {
-    *((&__SYS_TABLES_32_VMA + 2 * CANT_GDTS + 2 * offsetIDT)) = (offset & 0x00000FFFF) | ((selector & 0x0000FFFF) << 16); // parte baja - parte alta
-    *((&__SYS_TABLES_32_VMA + 2 * CANT_GDTS + 2 * offsetIDT) + 1) = ((atributos & 0x000000FF) << 8) | (offset & 0xFFFF0000);
+    *((&__SYS_TABLES_32_VMA_LIN + 2 * CANT_GDTS + 2 * offsetIDT)) = (offset & 0x00000FFFF) | ((selector & 0x0000FFFF) << 16); // parte baja - parte alta
+    *((&__SYS_TABLES_32_VMA_LIN + 2 * CANT_GDTS + 2 * offsetIDT) + 1) = ((atributos & 0x000000FF) << 8) | (offset & 0xFFFF0000);
 }
 
 //----------------------------------------------------------
@@ -463,7 +463,7 @@ __attribute__((section(".functions"))) void sup_tabla_digitos_completar(ring_buf
         parte_alta = (byte)rb_p->buffer[15 - i] | (parte_alta << 8);
     }
 
-    tabla_digitos_completar((tabla_digitos *)&__DIGITOS_VMA, parte_alta, parte_baja);
+    tabla_digitos_completar((tabla_digitos *)&__DIGITOS_VMA_LIN, parte_alta, parte_baja);
     //asm("xchg %%bx,%%bx"::);
 }
 
@@ -535,8 +535,8 @@ __attribute__((section(".functions"))) void ring_buffer_push(ring_buffer *rb_p, 
 
     if (rb_p->progreso == rb_p->longitud)
     {
-        sup_tabla_digitos_completar((ring_buffer *)&__DATOS_VMA);
-        __ring_buffer_clear((ring_buffer *)&__DATOS_VMA);
+        sup_tabla_digitos_completar((ring_buffer *)&__DATOS_VMA_LIN);
+        __ring_buffer_clear((ring_buffer *)&__DATOS_VMA_LIN);
     }
 }
 
@@ -568,7 +568,7 @@ __attribute__((section(".functions"))) void __screen_buffer_init(screen_buffer *
             sb_p->buffer[i][j] = 0x1E00; //inicializo todo en caracteres blanco
         }
     }
-    __screen_buffer_print(17, 1, sb_p, "Ejercicio N#8 - Paginacion Basica", 33);
+    __screen_buffer_print(17, 1, sb_p, "Ejercicio N#9 - Paginacion Avanzada", 35);
     __screen_buffer_print(5, 10, sb_p, "Promedio: 0x", 12);
     __screen_buffer_print(5, 22, sb_p, "Rios Taurasi Nicolas - TD3 UTN FRBA - CL 2021", 45);
 }
@@ -638,29 +638,29 @@ __attribute__((section(".functions"))) void __chequeo_tecla(byte tecla)
     {
     case TECLA_0:
     {
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x00);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x00);
         break;
     }
 
     case TECLA_1:
     {
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x01);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x01);
         break;
     }
     case TECLA_2:
     {
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x02);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x02);
         break;
     }
     case TECLA_3:
     {
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x03);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x03);
 
         break;
     }
     case TECLA_4:
     {
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x04);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x04);
 
         // asm("xchg %%bx,%%bx"::);
         break;
@@ -668,21 +668,21 @@ __attribute__((section(".functions"))) void __chequeo_tecla(byte tecla)
     case TECLA_5:
     {
 
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x05);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x05);
         // asm("xchg %%bx,%%bx"::);
         break;
     }
     case TECLA_6:
     {
 
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x06);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x06);
         // asm("xchg %%bx,%%bx"::);
         break;
     }
     case TECLA_7:
     {
 
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x07);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x07);
         // asm("xchg %%bx,%%bx"::);
         break;
     }
@@ -690,20 +690,20 @@ __attribute__((section(".functions"))) void __chequeo_tecla(byte tecla)
     {
         // asm("xchg %%bx,%%bx"::);
 
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x08);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x08);
         break;
     }
     case TECLA_9:
     {
         // asm("xchg %%bx,%%bx"::);
 
-        ring_buffer_push((ring_buffer *)&__DATOS_VMA, 0x09);
+        ring_buffer_push((ring_buffer *)&__DATOS_VMA_LIN, 0x09);
         break;
     }
     case TECLA_ENTER:
     {
-        sup_tabla_digitos_completar((ring_buffer *)&__DATOS_VMA);
-        __ring_buffer_clear((ring_buffer *)&__DATOS_VMA);
+        sup_tabla_digitos_completar((ring_buffer *)&__DATOS_VMA_LIN);
+        __ring_buffer_clear((ring_buffer *)&__DATOS_VMA_LIN);
         break;
     }
     default:

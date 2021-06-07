@@ -2,7 +2,7 @@
 ; * @file isr_keyboard.asm
 ; * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
 ; * @brief Handler de Interrupciones y Teclado
-; * @version 0.1
+; * @version 1.1
 ; * @date 01-06-2021
 ; * 
 ; * @copyright Copyright (c) 2021
@@ -18,7 +18,7 @@ EXTERN __carga_IDT
 EXTERN data_teclado
 EXTERN data_timer
 EXTERN __chequeo_tecla
-EXTERN __DATOS_TIMER_VMA
+EXTERN __DATOS_TIMER_VMA_LIN
 EXTERN __Systick_Handler
 GLOBAL pool_teclado
 
@@ -174,14 +174,19 @@ ISR14_Handler_PF:
     jc PF_US            ;                              
     bt eax,4            ;Bit 4 = 1 I/D                             
     jc PF_ID
+    jmp FIN_PF
 PF_P:
     mov dh,0x1
+    jmp FIN_PF
 PF_RW:
     mov dh,0x2
+    jmp FIN_PF
 PF_US:
     mov dh,0x4
+    jmp FIN_PF
 PF_ID:
     mov dh,0x8
+FIN_PF:
     pop eax
     mov dl,0x0E
     mov al, 0x20        
@@ -211,7 +216,7 @@ ISR19_Handler_XM:
     hlt
 
 IRQ00_Handler:
-    push __DATOS_TIMER_VMA
+    push __DATOS_TIMER_VMA_LIN
     call __Systick_Handler
     add esp,4
 

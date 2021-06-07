@@ -2,7 +2,7 @@
 ; * @file sys_gdt_table16.asm
 ; * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
 ; * @brief Tablas de sistema
-; * @version 0.1
+; * @version 1.1
 ; * @date 01-06-2021
 ; * 
 ; * @copyright Copyright (c) 2021

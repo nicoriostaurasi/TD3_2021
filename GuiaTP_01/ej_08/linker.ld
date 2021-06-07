@@ -3,12 +3,12 @@ linker básico
 */
 ENTRY (reset)
 
-    __EH_FRAME = 0x00060000; /*seccion para c y c++ exception handling*/
-    __DATA_NO_INIT = 0x00050000; 
+    __EH_FRAME          = 0x00060000; /*seccion para c y c++ exception handling*/
+    __DATA_NO_INIT      = 0x00050000; 
 
-    __STACK_START_16 = 0x9000;  /*SS=0x9000*/
-    __STACK_END_16 = 0x9FFF;
-    
+    __STACK_START_16    = 0x9000;  /*SS=0x9000*/
+    __STACK_END_16      = 0x9FFF;
+
     /*
     Mapa de memoria a seguir:
         *Sys_tables      0x0000-0000
@@ -23,17 +23,42 @@ ENTRY (reset)
         *Tarea 1 BSS     0x0032-0000
         *Tarea 1 DATA    0x0033-0000
         *Tarea 1 RODATA  0x0034-0000
-        *Stack           0x2FFF-8000
+        *Stack Sistema   0x1FFF-8000
+        *Stack Tarea 1   0x1FFF-F000
         *Init ROM        0xFFFF-0000
         *Reset Vector    0xFFFF-FFF0    
-    */  
+    */ 
+
+    /*-----------------LMA-----------------*/
+   
+    /*se ensambla en otra zona*/ 
+    __ROM_2_RAM             = 0xFFFF0000;  
+    __FUNCTIONS_LMA         = __ROM_2_RAM;
+  /*__TECLADO_ISR_LMA       = se completa abajo
+    __DATOS_LMA             = se completa abajo
+    __KERNEL_32_LMA         = se completa abajo
+    
+    __TASK_01_TEXT_LMA      = se completa abajo
+    __TASK_01_BSS_LMA       = se completa abajo
+    __TASK_01_DATA_LMA      = se completa abajo
+    __TASK_01_RODATA_LMA    = se completa abajo*/
+
+    /*Se Quedan en ROM*/
+    __ROM_2_ROM             = 0xFFFF8000;
+    __INIT_16_LMA           = __ROM_2_ROM; 
+/*  __VGA_INIT_LMA          = se completa abajo    
+    __INIT_32_LMA           = se completa abajo    
+    __FUNCTIONS_ROM_LMA     = se completa abajo */
+    __SYS_TABLES_16_LMA     = 0xFFFFF000;
+    __RESET_LMA             = 0xFFFFFFF0;
 
     /*-----------------VMA-----------------*/
-    __SYS_TABLES_32_VMA     = 0x00000000; /*donde guardo la IDT32+GDT32*/
+    /*Donde guardo la IDT32+GDT32*/
+    __SYS_TABLES_32_VMA     = 0x00000000; 
 
     /*Sección de las Tablas de paginacion*/
     __PAGE_TABLES_VMA       = 0x00010000;
-
+    
     /*Rutinas*/
     __FUNCTIONS_VMA         = 0x00050000; /*tengo los saltos referenciados a 0*/
 
@@ -51,7 +76,6 @@ ENTRY (reset)
     __DATOS_PROMEDIO_VMA    = 0x00200060;
     __DATOS_SCH_VMA         = 0x00200070;
     __DATOS_CONVERSION_VMA  = 0x00200090;
-/*    __DATOS_IMPRESION_VMA   = 0x00200110;*/
 
     /*Tabla de Dígitos*/
     __DIGITOS_VMA           = 0x00210000;
@@ -67,50 +91,26 @@ ENTRY (reset)
     __TASK_01_DATA_VMA      = 0x00330000;
     __TASK_01_RODATA_VMA    = 0x00340000;
 
-
     /*Stack 32*/
-/*    __STACK_START_32        = 0x2FFF8000;
-    __STACK_END_32          = 0x2FFF8FFF;*/
-
-    /*      config 2020   */
-    __STACK_START_32        = 0x1FF08000;
-    __STACK_END_32          = 0x1FF08FFF;
+    __STACK_START_32        = 0x1FFF8000;
+    __STACK_END_32          = 0x1FFF8FFF;
 
     __STACK_SIZE_32 = ((__STACK_END_32 - __STACK_START_32) / 4); /*32b word*/
     
-    /*Init ROM*/
-    __INIT_16_VMA           = 0xFFFFD000;
-    __VGA_INIT_VMA          = 0XFFFFE000; /*donde se encuentran las rutinas de VGA*/
-    __SYS_TABLES_16_VMA     = 0xFFFFF600; /*donde guardo la GDT*/
-    __INIT_32_VMA           = 0xFFFFF700;
-    __FUNCTIONS_ROM_VMA     = 0xFFFFF900;
+    __TASK_01_STACK_START   = 0x1FFFF000;
+    __TASK_01_STACK_END     = 0x1FFFFFFF;
+    __TASK_01_STACK_SIZE    = ((__TASK_01_STACK_END - __TASK_01_STACK_START) / 4); 
+
+    /*Init ROM*/ 
+    __INIT_16_VMA           = __INIT_16_LMA;
+    __VGA_INIT_VMA          = __VGA_INIT_LMA; /*donde se encuentran las rutinas de VGA*/
+    __INIT_32_VMA           = __INIT_32_LMA;
+    __FUNCTIONS_ROM_VMA     = __FUNCTIONS_ROM_LMA;
+    __SYS_TABLES_16_VMA     = __SYS_TABLES_16_LMA; /*donde guardo la GDT*/
     
     /*Vector de Reset*/
     __RESET_VMA             = 0xFFFFFFF0;
     
-    /*-----------------LMA-----------------*/
-   
-    __KERNEL_32_LMA         = 0xFFFF1000;
-    
-    __SYS_TABLES_32_LMA     = 0xFFFF2000;
-    __TECLADO_ISR_LMA       = 0xFFFF3000;
-    __DATOS_LMA             = 0xFFFF4000;
-    __FUNCTIONS_LMA         = 0xFFFF5000; /*se ensambla en otra zona*/   
-    
-    __TASK_01_LMA           = 0xFFFF7000;
-    __TASK_01_TEXT_LMA      = 0xFFFF7000;
-    __TASK_01_BSS_LMA       = 0xFFFF7C00;
-    __TASK_01_DATA_LMA      = 0xFFFF7D00;
-    __TASK_01_RODATA_LMA    = 0xFFFF7E00;
-
-    /*Se Quedan en ROM*/
-    __INIT_16_LMA           = 0xFFFFD000; 
-    __VGA_INIT_LMA          = 0XFFFFE000;    
-    __SYS_TABLES_16_LMA     = 0xFFFFF600;
-    __INIT_32_LMA           = 0xFFFFF700;    
-    __FUNCTIONS_ROM_LMA     = 0xFFFFF900;
-    __RESET_LMA             = 0xFFFFFFF0;
-
     /* Parametros de Paginacion*/
     /*Directorio*/
     __PDT_Sistema           = 0x00000000;
@@ -133,6 +133,7 @@ ENTRY (reset)
     __PT_TASK_01_DATA       = __TASK_01_DATA_VMA;      
     __PT_TASK_01_RODATA     = __TASK_01_RODATA_VMA;    
     __PT_STACK_SISTEMA      = __STACK_START_32;
+    __PT_TASK_01_STACK      = __TASK_01_STACK_START;
 
 MEMORY
 {
@@ -154,12 +155,6 @@ SECTIONS
 /*
 defino la seccion de salida segun la seccion de entrada
 */
-
-    .teclados_isr __TECLADO_ISR_VMA :
-        AT (__TECLADO_ISR_LMA)
-        { *(.teclado_and_ISR)} > ram 
-    __teclados_isr_size = SIZEOF(.teclados_isr);
-    
     .functions __FUNCTIONS_VMA :
         AT (__FUNCTIONS_LMA)
         { *(.functions); 
@@ -170,48 +165,76 @@ defino la seccion de salida segun la seccion de entrada
         }> ram
     __functions_size = SIZEOF(.functions);
 
+    __TECLADO_ISR_LMA = LOADADDR(.functions) + SIZEOF(.functions); 
+
+    .teclados_isr __TECLADO_ISR_VMA :
+        AT (__TECLADO_ISR_LMA)
+        { *(.teclado_and_ISR)} > ram 
+    __teclados_isr_size = SIZEOF(.teclados_isr);
+
+    __DATOS_LMA = LOADADDR(.teclados_isr) + SIZEOF(.teclados_isr);
+
     .datos __DATOS_VMA :
         AT (__DATOS_LMA)
         { ./bin/main.elf(.data); } > ram
     __datos_size = SIZEOF(.datos);
+
+    __KERNEL_32_LMA = LOADADDR(.datos) + SIZEOF(.datos);
 
     .codigo_kernel32 __KERNEL_32_VMA :
         AT (__KERNEL_32_LMA)
         { *(.kernel32); } > ram
     __codigo_kernel32_size = SIZEOF(.codigo_kernel32); 
 
+    __TASK_01_TEXT_LMA = LOADADDR(.codigo_kernel32) + SIZEOF(.codigo_kernel32);
+
+    /*-----TAREA 1-----*/
     .task01_texto __TASK_01_TEXT_VMA :
     AT (__TASK_01_TEXT_LMA)
     {*(.functions_task01);
      ./bin/task01.elf(.note*);} > ram
     __codigo_task_01 = SIZEOF(.task01_texto);
 
+    __TASK_01_BSS_LMA = LOADADDR(.task01_texto) + SIZEOF(.task01_texto);
+
     .task01_bss __TASK_01_BSS_VMA :
     AT (__TASK_01_BSS_LMA)
     {./bin/task01.elf(.bss);} > ram
     __bss_task_01 = SIZEOF(.task01_bss);
+
+    __TASK_01_DATA_LMA = LOADADDR(.task01_bss) + SIZEOF(.task01_bss);
 
     .task01_data __TASK_01_DATA_VMA :
     AT (__TASK_01_DATA_LMA)
     {./bin/task01.elf(.data);} > ram
     __data_task_01 = SIZEOF(.task01_data);
 
+    __TASK_01_RODATA_LMA = LOADADDR(.task01_data) + SIZEOF(.task01_data);  
+
     .task01_rodata __TASK_01_RODATA_VMA :
     AT (__TASK_01_RODATA_LMA)
     {./bin/task01.elf(.rodata);} > ram
     __rodata_task_01 = SIZEOF(.task01_rodata);
+    
 
+    /*-----ROM-----*/
     .codigo_init16 __INIT_16_VMA :
         AT (__INIT_16_LMA)
         { *(.ROM_init); } > rom 
+
+    __VGA_INIT_LMA = LOADADDR(.codigo_init16) + SIZEOF(.codigo_init16);
 
     .video __VGA_INIT_VMA :
         AT (__VGA_INIT_LMA )
         {*(.video);} > rom
 
+    __INIT_32_LMA = LOADADDR(.video) + SIZEOF(.video);
+
     .codigo_init32 __INIT_32_VMA :
         AT (__INIT_32_LMA)
         { *(.start32); } > rom 
+
+    __FUNCTIONS_ROM_LMA = LOADADDR(.codigo_init32) + SIZEOF(.codigo_init32);
 
     .functions_rom __FUNCTIONS_ROM_VMA :
         AT (__FUNCTIONS_ROM_LMA)

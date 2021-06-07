@@ -2,7 +2,7 @@
 ; * @file init16.asm
 ; * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
 ; * @brief Rutina de Inicializacion en 16 bits
-; * @version 0.1
+; * @version 1.1
 ; * @date 01-06-2021
 ; * 
 ; * @copyright Copyright (c) 2021

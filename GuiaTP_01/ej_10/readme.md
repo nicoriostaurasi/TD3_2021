@@ -1,6 +1,6 @@
-# Ejercicio 8 - Paginación Básica (Identity Mapping)
+# Ejercicio 9 - Paginación Avanzada
 
-## Repositorio del TP#01-08
+## Repositorio del TP#01-09
 
 ## Estructura de la carpeta
 
@@ -19,11 +19,11 @@
 
 ## Acceso rapido de la carpeta
 
-* [Doc](/GuiaTP_01/ej_08/doc/)
+* [Doc](/GuiaTP_01/ej_09/doc/)
 
-* [Inc](/GuiaTP_01/ej_08/inc/)
+* [Inc](/GuiaTP_01/ej_09/inc/)
 
-* [Src](/GuiaTP_01/ej_08/src/)
+* [Src](/GuiaTP_01/ej_09/src/)
 
 * [.bochsrc](.bochsrc)
 
@@ -65,17 +65,17 @@
         *Sys_tables      0x0000-0000    *Sys_tables      0x0000-0000    
         *Tablas de Pag.  0x0001-0000    *Tablas de Pag.  0x0001-0000    
         *Rutinas         0x0005-0000    *Rutinas         0x0005-0000    
-        *RAM VIDEO       0x000B-8000    *RAM VIDEO       0x000B-8000    
+        *RAM VIDEO       0x000B-8000    *RAM VIDEO       0x00E8-0000  
         *Teclado + ISR   0x0010-0000    *Teclado + ISR   0x0010-0000    
-        *Digitos         0x0020-0000    *Digitos         0x0020-0000    
-        *Datos           0x0021-0000    *Datos           0x0021-0000    
-        *Kernel          0x0022-0000    *Kernel          0x0022-0000    
-        *Tarea 1 TEXT    0x0031-0000    *Tarea 1 TEXT    0x0031-0000    
-        *Tarea 1 BSS     0x0032-0000    *Tarea 1 BSS     0x0032-0000    
-        *Tarea 1 DATA    0x0033-0000    *Tarea 1 DATA    0x0033-0000    
-        *Tarea 1 RODATA  0x0034-0000    *Tarea 1 RODATA  0x0034-0000    
+        *Datos           0x0020-0000    *Datos           0x0120-0000
+        *Digitos         0x0021-0000    *Digitos         0x0121-0000    
+        *Kernel          0x0022-0000    *Kernel          0x0122-0000    
+        *Tarea 1 TEXT    0x0031-0000    *Tarea 1 TEXT    0x0131-0000    
+        *Tarea 1 BSS     0x0032-0000    *Tarea 1 BSS     0x0132-0000    
+        *Tarea 1 DATA    0x0033-0000    *Tarea 1 DATA    0x0133-0000    
+        *Tarea 1 RODATA  0x0034-0000    *Tarea 1 RODATA  0x0134-0000    
         *Stack Sistema   0x1FFF-8000    *Stack Sistema   0x1FFF-8000    
-        *Stack Tarea 1   0x1FFF-F000    *Stack Tarea 1   0x1FFF-F000    
+        *Stack Tarea 1   0x1FFF-F000    *Stack Tarea 1   0x0078-F000    
         *Init ROM        0xFFFF-0000    *Init ROM        0xFFFF-0000    
         *Reset Vector    0xFFFF-FFF0    *Reset Vector    0xFFFF-FFF0    
 ```
@@ -96,3 +96,4 @@ GNU ld (GNU Binutils for Ubuntu) 2.35.1
 * Se cargaron 2 GDT distintas ya que el flujo no dejaba cargar las IDT. *Una solución a este problema es usar el prefijo o32*
 * Las instrucciones no permiten realizar el promedio de un numero de 64 bits, por lo que por ahora se calcula la sumatoria y se imprime en hexa. *Solucionado realizando la división bit a bit en un algoritmo en C*
 * La guía propone una dirección para el Stack del Sistema que al mapearse su TP queda en una sección del mapa de memoria que contiene ROM, por lo que por el momento se esta mapeando en la posición de la errata (0X1FFF8000), al igual que la posición del stack de tarea 1 (0x1FFFF000).
+* En donde la guía indica *Dirección Inicial* debe decir *Dirección Física Inicial*

@@ -2,7 +2,7 @@
  * @file functions_rom.c
  * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
  * @brief 
- * @version 0.1
+ * @version 1.1
  * @date 2021-06-01
  * 
  * @copyright Copyright (c) 2021

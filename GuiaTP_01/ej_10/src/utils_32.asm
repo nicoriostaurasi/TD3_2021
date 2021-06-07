@@ -2,7 +2,7 @@
 ; * @file utils_32.asm
 ; * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
 ; * @brief Rutinas de utilidad para inicializar
-; * @version 0.1
+; * @version 1.1
 ; * @date 01-06-2021
 ; * 
 ; * @copyright Copyright (c) 2021
@@ -51,9 +51,10 @@ EXTERN  __carga_TP
 EXTERN  __carga_CR3
 EXTERN  __clean_dir
 EXTERN  __pagina_rom
+EXTERN  __levanto_pagina
 
 ;Labels para Paginación
-EXTERN __PAGE_TABLES_VMA
+EXTERN __PAGE_TABLES_VMA_LIN
 EXTERN __PDT_Stack_Sistema
 EXTERN __PDT_Sistema
 EXTERN __PT_SYS_TABLES         
@@ -429,38 +430,45 @@ PAG_PS_4K   equ 0       ; tamaño de pagina de 4KB
 
 cargo_DTP_desde_codigo:
 
-;DTP
-;------------------------
-;(0x0) 0x0000-0000 a 0x003F-FFFF
-;   *Sys_tables      0x0000-0000
-;   *Tablas de Pag.  0x0001-0000
-;   *Rutinas         0x0005-0000
-;   *RAM VIDEO       0x000B-8000
-;   *Teclado + ISR   0x0010-0000
-;   *Digitos         0x0020-0000
-;   *Datos           0x0021-0000
-;   *Kernel          0x0022-0000
-;   *Tarea 1 TEXT    0x0031-0000
-;   *Tarea 1 BSS     0x0032-0000
-;   *Tarea 1 DATA    0x0033-0000
-;   *Tarea 1 RODATA  0x0034-0000
-;------------------------
-;(0x1) VACIA
-;------------------------
-; (..)
-;------------------------
-;(0x2FC) 0x2FC0-0000 a 0x2FFF-FFFF
-;------------------------
-; (..)
-;------------------------
-;(0xFFC) 0xFFC0-0000 a 0xFFFF-FFFF
-;   *Init ROM de 64K 0xFFFF-0000 a 0xFFFF-0FFF
-;   *VGA INIT        0xFFFF-E000 a 0xFFFF-EFFF
-;   *COMODIN         0xFFFF-F000 a 0xFFFF-FFFF
-;   -INIT 32         0xFFFF-F700 a 0xFFFF-FFFF
-;   -Funciones ROM   0xFFFF-F900 a 0xFFFF-FFFF
-;   -Sys Tables 16   0xFFFF-FE00 a 0xFFFF-FFFF
-;------------------------
+  ;DTP
+  ;------------------------
+  ;(0x0) 0x0000-0000 a 0x003F-FFFF
+  ;   *Sys_tables      0x0000-0000
+  ;   *Tablas de Pag.  0x0001-0000
+  ;   *Rutinas         0x0005-0000
+  ;   *Teclado + ISR   0x0010-0000 
+  ;------------------------
+  ;(0x1) 0x0040-0000 a 0x007F-FFFF
+  ;   *Stack Tarea 1   0x0078-F000
+  ;------------------------
+  ;(0x2) 0x0080-0000 a 0x00BF-FFFF (vacia)
+  ;------------------------  
+  ;(0x3) 0x00C0-0000 a 0x00FF-FFFF
+  ;   *RAM Video       0x00E8-0000
+  ;------------------------
+  ;(0x4) 0x0100-0000 a 0x013F-FFFF
+  ;   *Digitos         0x0120-0000
+  ;   *Datos           0x0121-0000
+  ;   *Kernel          0x0122-0000
+  ;   *Tarea 1 TEXT    0x0131-0000
+  ;   *Tarea 1 BSS     0x0132-0000
+  ;   *Tarea 1 DATA    0x0133-0000
+  ;   *Tarea 1 RODATA  0x0134-0000
+  ;------------------------
+  ;(0x5) 0x0140-0000 a 0x017F-FFFF
+  ;------------------------
+  ;(0x1FC) 0x1FC0-0000 a 0x1FFF-FFFF
+  ;------------------------
+  ; (..)
+  ;------------------------
+  ;(0xFFC) 0xFFC0-0000 a 0xFFFF-FFFF
+  ;   *Init ROM de 64K 0xFFFF-0000 a 0xFFFF-0FFF
+  ;   *VGA INIT        0xFFFF-E000 a 0xFFFF-EFFF
+  ;   *COMODIN         0xFFFF-F000 a 0xFFFF-FFFF
+  ;   -INIT 32         0xFFFF-F700 a 0xFFFF-FFFF
+  ;   -Funciones ROM   0xFFFF-F900 a 0xFFFF-FFFF
+  ;   -Sys Tables 16   0xFFFF-FE00 a 0xFFFF-FFFF
+  ;------------------------
 
     ;------------------------
     ; DTP (0x0) 0x0000-0000 a 0x003F-FFFF
@@ -472,14 +480,14 @@ cargo_DTP_desde_codigo:
     push PAG_PCD_NO
     push PAG_A
     push PAG_PS_4K
-    push dword(__PAGE_TABLES_VMA+0x1000)      
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x00)      
     push 0x00                               
-    push dword(__PAGE_TABLES_VMA)             
+    push dword(__PAGE_TABLES_VMA_LIN)             
     call __carga_DTP
     add esp,40
 
     ;------------------------
-    ;DTP(0x2FC) 0x2FC0-0000 a 0x2FFF-FFFF
+    ; DTP (0x1) 0x0040-0000 a 0x007F-FFFF
     ;------------------------
     push PAG_P_YES          
     push PAG_RW_W
@@ -488,11 +496,88 @@ cargo_DTP_desde_codigo:
     push PAG_PCD_NO
     push PAG_A
     push PAG_PS_4K
-    ;push dword(__PAGE_TABLES_VMA+0x1000+0x1000*0xBF)      
-    ;push 0xBF                               
-    push dword(__PAGE_TABLES_VMA+0x1000+0x1000*0x7F)      
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x01)      
+    push 0x01                               
+    push dword(__PAGE_TABLES_VMA_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    ;------------------------  
+    ; DTP (0x3) 0x00C0-0000 a 0x00FF-FFFF
+    ;------------------------
+    push PAG_P_YES
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x03)      
+    push 0x03                               
+    push dword(__PAGE_TABLES_VMA_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    ;------------------------
+    ; DTP (0x4) 0x0100-0000 a 0x013F-FFFF
+    ;------------------------
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x04)      
+    push 0x04                               
+    push dword(__PAGE_TABLES_VMA_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    ;------------------------
+    ; DTP (0x5) 0x0140-0000 a 0x017F-FFFF
+    ;------------------------
+    push PAG_P_NO          
+    push PAG_RW_R 
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x05)      
+    push 0x05                               
+    push dword(__PAGE_TABLES_VMA_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_NO
+    push PAG_RW_R
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_D
+    push PAG_PAT
+    push PAG_G_YES
+    push dword(0xA0000000)
+    push 0x000
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x05)
+    call __carga_TP 
+    add esp,48
+
+    ;------------------------
+    ; DTP (0x2FC) 0x1FC0-0000 a 0x1FFF-FFFF
+    ;------------------------
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x7F)      
     push 0x7F                               
-    push dword(__PAGE_TABLES_VMA)            
+    push dword(__PAGE_TABLES_VMA_LIN)            
     call __carga_DTP
     add esp,40
 
@@ -506,9 +591,9 @@ cargo_DTP_desde_codigo:
     push PAG_PCD_NO
     push PAG_A
     push PAG_PS_4K
-    push dword(__PAGE_TABLES_VMA+0x1000+0x1000*0x3FF)      
+    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x3FF)      
     push 0x3FF                               
-    push dword(__PAGE_TABLES_VMA)            
+    push dword(__PAGE_TABLES_VMA_LIN)            
     call __carga_DTP
     add esp,40
 ret
@@ -545,15 +630,7 @@ cargo_TP_desde_codigo:
   ;   *Sys_tables      0x0000-0000
   ;   *Tablas de Pag.  0x0001-0000
   ;   *Rutinas         0x0005-0000
-  ;   *RAM VIDEO       0x000B-8000
   ;   *Teclado + ISR   0x0010-0000
-  ;   *Digitos         0x0020-0000
-  ;   *Datos           0x0021-0000
-  ;   *Kernel          0x0022-0000
-  ;   *Tarea 1 TEXT    0x0031-0000
-  ;   *Tarea 1 BSS     0x0032-0000
-  ;   *Tarea 1 DATA    0x0033-0000
-  ;   *Tarea 1 RODATA  0x0034-0000
   ;------------------------
   
   ;-----------------------------------------------------------------
@@ -570,7 +647,7 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_SYS_TABLES)
   push 0x00
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000)
   call __carga_TP 
   add esp,48
 
@@ -588,7 +665,7 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_TABLAS_PAGINACION)
   push 0x010
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000)
   call __carga_TP 
   add esp,48
 
@@ -606,30 +683,12 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_FUNCIONES)
   push 0x050
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000)
   call __carga_TP 
   add esp,48
 
   ;-----------------------------------------------------------------
-  ;4° Pagina de 4K - RAM de Video  0x000B-8000 a 0x000B-8FFF
-  ;-----------------------------------------------------------------
-  push PAG_P_YES
-  push PAG_RW_W
-  push PAG_US_SUP
-  push PAG_PWT_NO
-  push PAG_PCD_NO
-  push PAG_A
-  push PAG_D
-  push PAG_PAT
-  push PAG_G_YES
-  push dword(__PT_VIDEO)
-  push 0x0B8
-  push dword(__PAGE_TABLES_VMA+0x1000)
-  call __carga_TP 
-  add esp,48
-
-  ;-----------------------------------------------------------------
-  ;5° Pagina de 4K - Teclado + ISR  0x0010-0000 a 0x0010-0FFF
+  ;4° Pagina de 4K - Teclado + ISR  0x0010-0000 a 0x0010-0FFF
   ;-----------------------------------------------------------------
   push PAG_P_YES
   push PAG_RW_R
@@ -642,12 +701,18 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_TECLADO_ISR)
   push 0x100
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000)
   call __carga_TP 
   add esp,48
 
+
+  ;------------------------  
+  ;(0x3) 0x00C0-0000 a 0x00FF-FFFF
+  ;   *RAM Video       0x00E8-0000
+  ;------------------------
+
   ;-----------------------------------------------------------------
-  ;6° Pagina de 4K - Datos 0x0020-0000 a 0x0020-0FFF
+  ;5° Pagina de 4K - RAM de Video  0x00E8-0000 a 0x00E8-0000
   ;-----------------------------------------------------------------
   push PAG_P_YES
   push PAG_RW_W
@@ -658,14 +723,25 @@ cargo_TP_desde_codigo:
   push PAG_D
   push PAG_PAT
   push PAG_G_YES
-  push dword(__PT_DATOS)
-  push 0x200
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PT_VIDEO)
+  push 0x280
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x03))
   call __carga_TP 
   add esp,48
 
+  ;------------------------
+  ;(0x4) 0x0100-0000 a 0x013F-FFFF
+  ;   *Digitos         0x0120-0000
+  ;   *Datos           0x0121-0000
+  ;   *Kernel          0x0122-0000
+  ;   *Tarea 1 TEXT    0x0131-0000
+  ;   *Tarea 1 BSS     0x0132-0000
+  ;   *Tarea 1 DATA    0x0133-0000
+  ;   *Tarea 1 RODATA  0x0134-0000
+  ;------------------------
+
   ;-----------------------------------------------------------------
-  ;7° Pagina de 4K - Digitos 0x0021-0000 a 0x0021-0FFF
+  ;6° Pagina de 4K - Digitos 0x0121-0000 a 0x0121-0FFF
   ;-----------------------------------------------------------------
   push PAG_P_YES
   push PAG_RW_W
@@ -678,12 +754,32 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_DIGITOS)
   push 0x210
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
 
   ;-----------------------------------------------------------------
-  ;8° Pagina de 4K - Kernel 0x0022-0000 a 0x0022-0FFF
+  ;7° Pagina de 4K - Datos 0x0120-0000 a 0x0120-0FFF
+  ;-----------------------------------------------------------------
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_DATOS)
+  push 0x200
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
+  call __carga_TP 
+  add esp,48
+
+
+
+  ;-----------------------------------------------------------------
+  ;8° Pagina de 4K - Kernel 0x0122-0000 a 0x0122-0FFF
   ;-----------------------------------------------------------------
   push PAG_P_YES
   push PAG_RW_R
@@ -696,7 +792,7 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_KERNEL)
   push 0x220
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
 
@@ -714,7 +810,7 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_TASK_01_TEXT)
   push 0x310
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
 
@@ -732,7 +828,7 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_TASK_01_BSS)
   push 0x320
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
 
@@ -750,7 +846,7 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_TASK_01_DATA)
   push 0x330
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
 
@@ -768,18 +864,13 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_TASK_01_RODATA)
   push 0x340
-  push dword(__PAGE_TABLES_VMA+0x1000)
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
-
-  ;-----------------------------------------------------------------
-  ;Paginados los 1ros 4MB
-  ;-----------------------------------------------------------------
   
   ;-----------------------------------------------------------------
   ; Si llegaste a leer esto tomate un cafe, porque lo que viene es durisimo
   ;-----------------------------------------------------------------
-
   ;0x2FFF-8000 / 0x0040-0000 = 191.99
   ;191*4MB = 0x2FC0-0000
   ;------------------------
@@ -801,12 +892,17 @@ cargo_TP_desde_codigo:
   push PAG_G_YES
   push dword(__PT_STACK_SISTEMA)
   push 0x3F8
-  push dword(__PAGE_TABLES_VMA+0x1000+(0x1000*0x7F))
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
   call __carga_TP 
   add esp,48
 
+  ;------------------------
+  ;(0x1) 0x0040-0000 a 0x007F-FFFF
+  ;   *Stack Tarea 1   0x0078-F000
+  ;------------------------
+
   ;-----------------------------------------------------------------
-  ;14° Pagina de 4K - Stack de TASK 01 0x1FFF-F000 a 0x1FFF-FFFF
+  ;14° Pagina de 4K - Stack de TASK 01 0x1FFF-F000 a 0x1FFF-FFFF    
   ;-----------------------------------------------------------------
   push PAG_P_YES
   push PAG_RW_W
@@ -818,8 +914,8 @@ cargo_TP_desde_codigo:
   push PAG_PAT
   push PAG_G_YES
   push dword(__PT_TASK_01_STACK)
-  push 0x3FF
-  push dword(__PAGE_TABLES_VMA+0x1000+(0x1000*0x7F))
+  push 0x38F
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
   call __carga_TP 
   add esp,48
 
@@ -839,7 +935,7 @@ cargo_TP_desde_codigo:
   ;------------------------
 
   ;paginas 14-29 (ROM de 64KB)
-  
+  call __levanto_pagina
   call __pagina_rom
 ret
 
@@ -853,7 +949,7 @@ ret
 
 cargo_CR3:
   xor eax,eax
-  push __PAGE_TABLES_VMA
+  push __PAGE_TABLES_VMA_LIN
   push 0x18;
       ;PWT SI
       ;PCD SI

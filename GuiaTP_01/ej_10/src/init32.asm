@@ -2,7 +2,7 @@
 ; * @file init32.asm
 ; * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
 ; * @brief Rutina de Inicializacion en 32 bits
-; * @version 0.1
+; * @version 1.1
 ; * @date 01-06-2021
 ; * 
 ; * @copyright Copyright (c) 2021
@@ -37,10 +37,10 @@ EXTERN __TASK_01_BSS_LMA
 EXTERN __TASK_01_DATA_LMA   
 EXTERN __TASK_01_RODATA_LMA 
 
-EXTERN __TASK_01_TEXT_VMA
-EXTERN __TASK_01_BSS_VMA
-EXTERN __TASK_01_DATA_VMA
-EXTERN __TASK_01_RODATA_VMA
+EXTERN __TASK_01_TEXT_VMA_PHI
+EXTERN __TASK_01_BSS_VMA_PHI
+EXTERN __TASK_01_DATA_VMA_PHI
+EXTERN __TASK_01_RODATA_VMA_PHI
 
 EXTERN __codigo_task_01
 EXTERN __bss_task_01
@@ -52,19 +52,19 @@ EXTERN __TASK_01_VMA
 
 
 EXTERN  kernel32_code_size
-EXTERN  __KERNEL_32_VMA
+EXTERN  __KERNEL_32_VMA_PHI
 EXTERN  __KERNEL_32_LMA
 
 EXTERN  __functions_size
-EXTERN  __FUNCTIONS_VMA
+EXTERN  __FUNCTIONS_VMA_PHI
 EXTERN  __FUNCTIONS_LMA
 
 EXTERN  __sys_tables_size
-EXTERN  __SYS_TABLES_32_VMA
+EXTERN  __SYS_TABLES_32_VMA_PHI
 EXTERN  __SYS_TABLES_32_LMA
 
 EXTERN  __teclados_isr_size
-EXTERN  __TECLADO_ISR_VMA
+EXTERN  __TECLADO_ISR_VMA_PHI
 EXTERN  __TECLADO_ISR_LMA
 
 EXTERN init_pic
@@ -116,7 +116,7 @@ start32_launcher:
     push ebp
     mov ebp,esp
     push __functions_size
-    push __FUNCTIONS_VMA
+    push __FUNCTIONS_VMA_PHI
     push __FUNCTIONS_LMA
     call __fast_memcpy_rom
     leave                       
@@ -127,7 +127,7 @@ start32_launcher:
     push ebp
     mov ebp,esp
     push __codigo_kernel32_size
-    push __KERNEL_32_VMA
+    push __KERNEL_32_VMA_PHI
     push __KERNEL_32_LMA
     call __fast_memcpy
     leave
@@ -138,7 +138,7 @@ start32_launcher:
     push ebp
     mov ebp,esp
     push __teclados_isr_size
-    push __TECLADO_ISR_VMA
+    push __TECLADO_ISR_VMA_PHI
     push __TECLADO_ISR_LMA
     call __fast_memcpy
     leave
@@ -150,7 +150,7 @@ start32_launcher:
     push ebp
     mov ebp,esp
     push __codigo_task_01
-    push __TASK_01_TEXT_VMA
+    push __TASK_01_TEXT_VMA_PHI
     push __TASK_01_TEXT_LMA
     call __fast_memcpy
     leave
@@ -160,7 +160,7 @@ start32_launcher:
     push ebp
     mov ebp,esp
     push __bss_task_01
-    push __TASK_01_BSS_VMA
+    push __TASK_01_BSS_VMA_PHI
     push __TASK_01_BSS_LMA
     call __fast_memcpy
     leave
@@ -170,7 +170,7 @@ start32_launcher:
     push ebp
     mov ebp,esp
     push __data_task_01
-    push __TASK_01_DATA_VMA
+    push __TASK_01_DATA_VMA_PHI
     push __TASK_01_DATA_LMA
     call __fast_memcpy
     leave
@@ -180,7 +180,7 @@ start32_launcher:
     push ebp
     mov ebp,esp
     push __rodata_task_01
-    push __TASK_01_RODATA_VMA
+    push __TASK_01_RODATA_VMA_PHI
     push __TASK_01_RODATA_LMA
     call __fast_memcpy
     leave
@@ -198,7 +198,6 @@ start32_launcher:
     call init_mask_pic
     
     ;Habilito IRQ1
-    ;xchg bx,bx
     in al,0x21
     xor al,teclado_IRQ
     out 0x21,al
@@ -223,6 +222,8 @@ start32_launcher:
     or  eax, X86_CR0_PG
     mov cr0, eax
 
+;    xchg bx,bx
+
     sti
 
     jmp CS_SEL_32:kernel32_init; me fui al kernel
@@ -235,9 +236,9 @@ start32_launcher:
     ;registros de GDT/IDT nuevos
     _lgdt_v2:
     dw (CANT_GDTS*8-1)
-    dd __SYS_TABLES_32_VMA
+    dd __SYS_TABLES_32_VMA_PHI
 
     _igdt_v2:
     dw (CANT_INTERRUPCIONES*8-1)
-    dd (__SYS_TABLES_32_VMA+(CANT_GDTS*8))
+    dd (__SYS_TABLES_32_VMA_PHI+(CANT_GDTS*8))
 

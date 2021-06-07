@@ -14,9 +14,9 @@
 
 - [x] Ejercicio 7 - 24/05/21
 
-- [ ] Ejercicio 8
+- [x] Ejercicio 8 - 04/06/21
 
-- [ ] Ejercicio 9
+- [x] Ejercicio 9 - 04/06/21
 
 - [ ] Ejercicio 10
 
@@ -41,3 +41,5 @@
 * [Ejercicio 7 - Rutina Temporizada y Controladora de Video](/GuiaTP_01/ej_07/)
 
 * [Ejercicio 8 - Paginación Básica](/GuiaTP_01/ej_08/)
+
+* [Ejercicio 9 - Paginación Avanzada](/GuiaTP_01/ej_09/)
