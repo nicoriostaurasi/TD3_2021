@@ -35,6 +35,7 @@ PAG_G_YES   equ 0       ; Global
 PAG_A       equ 0       ; accedida
 PAG_PS_4K   equ 0       ; tamaño de pagina de 4KB
 EXTERN __PAGE_TABLES_VMA_LIN
+EXTERN __PAGE_TABLES_VMA_TASK01_LIN
 EXTERN __carga_DTP
 EXTERN __carga_TP
 
@@ -57,6 +58,7 @@ GLOBAL ISR11_Handler_NP
 GLOBAL ISR12_Handler_SS
 GLOBAL ISR13_Handler_GP
 GLOBAL ISR14_Handler_PF
+GLOBAL ISR14_Handler_PF_Basico
 GLOBAL ISR16_Handler_MF
 GLOBAL ISR17_Handler_AC
 GLOBAL ISR18_Handler_MC
@@ -182,6 +184,10 @@ ISR13_Handler_GP:
     mov dl,0x0D
     hlt
 
+ISR14_Handler_PF_Basico:
+    mov dl,0x0E
+    hlt
+
 ISR14_Handler_PF:
     cli                         ;deshabilito interrupciones para no romper todo               
     pusha
@@ -203,7 +209,7 @@ ISR14_Handler_PF:
 PF_P:
     ;creo la DTP correspondiente
     ;en esta rutina conformo la siguiente expresión:
-    ;__PAGE_TABLES_VMA_LIN+0x1000+(0x1000)*(0xFFC00000 & CR2_RAM)>>22
+    ;__PAGE_TABLES_VMA_LIN+0x5000+(0x1000)*(0xFFC00000 & CR2_RAM)>>22
     mov ebx, dword [cr2_ram_main]            ;cargo cr2 en ebx           
     and ebx, 0xFFC00000                 ;obtengo los bits 31-22
     shr ebx, 22                         ;lo shifteo hacia la derecha 22 veces
@@ -211,8 +217,8 @@ PF_P:
     mov eax, ebx                        ;cargo en eax los bits 31-22
     mov ecx, 0x1000                     ;multiplico por 0x1000 para tener la DTP alineada
     mul ecx                             ;almaceno el valor en eax        
-    add eax, 0x1000                     ;le sumo 0x1000 a eax
-    add eax, __PAGE_TABLES_VMA_LIN      ;le sumo el inicio de la DTP a eax
+    add eax, 0x5000                     ;le sumo 0x5000 a eax
+    add eax, __PAGE_TABLES_VMA_TASK01_LIN      ;le sumo el inicio de la DTP a eax
     ;fin de la rutina
     ;en eax tengo la direccion de carga de las TP
     push PAG_P_YES          
@@ -224,7 +230,7 @@ PF_P:
     push PAG_PS_4K
     push dword(eax)                             
     push ebx                                    
-    push dword(__PAGE_TABLES_VMA_LIN)                
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN)                
     call __carga_DTP
     add esp,40
     ;en esta rutina conformo la siguiente expresión:
@@ -309,17 +315,26 @@ ISR19_Handler_XM:
     mov dl,0x13
     hlt
 
+GLOBAL return_scheduler_ASM
+EXTERN scheduler_ASM
+
 IRQ00_Handler:
+    ;EOI
+;    xchg bx,bx
+    ;0x12201B2
+    mov al, 0x20                        ;limpio la interrupcion del pic 
+    out 0x20, al
+    jmp scheduler_ASM
+return_scheduler_ASM:
     push __DATOS_TIMER_VMA_LIN
     call __Systick_Handler
     add esp,4
-
-    mov al, 0x20                        ;limpio la interrupcion del pic 
-    out 0x20, al
     iret
 
+
+
 IRQ01_Handler:
-    
+
     pushad                            ;pusheo EAX para no perder info
     xor eax,eax               	      ;Clean EAX
     in al,PORT_A_8042                 ;leo el puerto

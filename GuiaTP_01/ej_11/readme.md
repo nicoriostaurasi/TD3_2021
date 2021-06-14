@@ -1,6 +1,6 @@
-# Ejercicio 10 - Paginación Real
+# Ejercicio 11 - Conmutación de Tareas
 
-## Repositorio del TP#01-10
+## Repositorio del TP#01-11
 
 ## Estructura de la carpeta
 
@@ -49,10 +49,18 @@
 
 * **reset.asm**: Contiene el vector de reset. [Fuente](src/reset.asm) 
 
+* **scheduler.asm**: Contiene el Algoritmo para manejar varias tareas de manera secuencial y cooperativa, el mismo guarda el contexto de cada tarea y lo recupera al volver a realizar sus distintas llamadas. También se ocupa de la protección entre tareas para que no puedan ver su contenido de codigo y datos entre ellas. [Fuente](src/scheduler.asm). Para el diseño del mismo se implemento el siguiente [diagrama de estados](doc/Scheduler_TD3.pdf)
+
 * **sys_gdt_table16.asm**: Contiene la tabla GDT 16.
 [Fuente](src/sys_gdt_table16.asm)
 
 * **task01.c**: Contiene las funciones de la Tarea 1: Escribir en VGA, Calcular promedio.[Fuente](src/task01.c)
+
+* **task02.c**: Contiene las funciones de la Tarea 2: Escribir en VGA, Calcular Sumatoria.[Fuente](src/task02.c)
+
+* **task04.c**: Contiene las funciones de la Tarea 4: Establecer el Procesador en alta impedancia.[Fuente](src/task04.c)
+
+* **timer.c**: Contiene las funciones para contabilizar distintos tiempos. Contiene el algoritmo de scheduler en C pero el mismo fue descartado. [Fuente](src/timer.c)
 
 * **utils32.asm**: Contiene rutinas utiles: Programar pics. Cargar una IDT segun la VMA. Cargar un GDT segun la VMA, Iniciar PIT, Rutinas de Carga de PDT y PT junto con cr3.
 [Fuente](src/utils_32.asm)
@@ -69,15 +77,36 @@
         *Teclado + ISR   0x0010-0000    *Teclado + ISR   0x0010-0000    
         *Datos           0x0020-0000    *Datos           0x0120-0000
         *Digitos         0x0021-0000    *Digitos         0x0121-0000    
-        *Kernel          0x0022-0000    *Kernel          0x0122-0000    
+        *Kernel          0x0022-0000    *Kernel          0x0122-0000
+
         *Tarea 1 TEXT    0x0031-0000    *Tarea 1 TEXT    0x0131-0000    
         *Tarea 1 BSS     0x0032-0000    *Tarea 1 BSS     0x0132-0000    
         *Tarea 1 DATA    0x0033-0000    *Tarea 1 DATA    0x0133-0000    
-        *Tarea 1 RODATA  0x0034-0000    *Tarea 1 RODATA  0x0134-0000    
+        *Tarea 1 RODATA  0x0034-0000    *Tarea 1 RODATA  0x0134-0000
+        
+        *Tarea 2 TEXT    0x0041-1000    *Tarea 2 TEXT    0x0141-0000    
+        *Tarea 2 BSS     0x0042-0000    *Tarea 2 BSS     0x0142-0000    
+        *Tarea 2 DATA    0x0043-0000    *Tarea 2 DATA    0x0143-0000    
+        *Tarea 2 RODATA  0x0044-0000    *Tarea 2 RODATA  0x0144-0000
+        
+        *Tarea 3 TEXT    0x0051-0000    *Tarea 3 TEXT    0x0151-0000    
+        *Tarea 3 BSS     0x0052-0000    *Tarea 3 BSS     0x0152-0000    
+        *Tarea 3 DATA    0x0053-0000    *Tarea 3 DATA    0x0153-0000    
+        *Tarea 3 RODATA  0x0054-0000    *Tarea 3 RODATA  0x0154-0000
+        
+        *Tarea 4 TEXT    0x0061-0000    *Tarea 4 TEXT    0x0161-0000    
+        *Tarea 4 BSS     0x0062-0000    *Tarea 4 BSS     0x0162-0000    
+        *Tarea 4 DATA    0x0063-0000    *Tarea 4 DATA    0x0163-0000    
+        *Tarea 4 RODATA  0x0064-0000    *Tarea 4 RODATA  0x0164-0000
+        
         *Stack Sistema   0x1FFF-8000    *Stack Sistema   0x1FFF-8000    
         *Stack Tarea 1   0x1FFF-F000    *Stack Tarea 1   0x0078-F000    
+        *Stack Tarea 2   0x3000-0000    *Stack Tarea 2   0x2FFF-1000    
+        *Stack Tarea 3   0x3001-0000    *Stack Tarea 3   0x2FFF-2000    
+        *Stack Tarea 4   0x3002-0000    *Stack Tarea 4   0x2FFF-3000    
+
         *Init ROM        0xFFFF-0000    *Init ROM        0xFFFF-0000    
-        *Reset Vector    0xFFFF-FFF0    *Reset Vector    0xFFFF-FFF0    
+        *Reset Vector    0xFFFF-FFF0    *Reset Vector    0xFFFF-FFF0     
 ```
 
 * **Makefile**: Para correr
@@ -97,3 +126,4 @@ GNU ld (GNU Binutils for Ubuntu) 2.35.1
 * Las instrucciones no permiten realizar el promedio de un numero de 64 bits, por lo que por ahora se calcula la sumatoria y se imprime en hexa. *Solucionado realizando la división bit a bit en un algoritmo en C*
 * La guía propone una dirección para el Stack del Sistema que al mapearse su TP queda en una sección del mapa de memoria que contiene ROM, por lo que por el momento se esta mapeando en la posición de la errata (0X1FFF8000), al igual que la posición del stack de tarea 1 (0x1FFFF000).
 * En donde la guía indica *Dirección Inicial* debe decir *Dirección Física Inicial*
+* Se modificó la Dirección Física correspondiente a la sección *text* de la tarea 2 ya que la misma solapa las TP de la memoria ROM. 

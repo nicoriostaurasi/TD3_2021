@@ -276,87 +276,6 @@ __attribute__((section(".functions"))) void __levanto_pagina(void)
  
 }
 
-
-//----------------------------------------------------------
-//                   TIMER
-//----------------------------------------------------------
-
-/*----------------------------------------------------------
- * __tiempo_iniciar
- * __Systick_Handler
- *----------------------------------------------------------*/
-
-/**
- * @brief Funcion de inicio a Systick timer
- * @return nada
- * @param tiempos* tp, VMA de la Estructura de Timer
- */
-__attribute__((section(".functions"))) void __tiempo_iniciar(tiempos *tp)
-{
-    tp->base = 0x00; //en nuestro caso 100mS
-    tp->milisegundos = 0x0000;
-    tp->segundos = 0x00;
-    tp->minutos = 0x00;
-    tp->horas = 0x00;
-}
-
-/**
- * @brief Funcion de handler de Systick
- * @return nada
- * @param tiempos* tp, VMA de la Estructura de Tiempos 
- */
-__attribute__((section(".functions"))) void __Systick_Handler(tiempos *tp)
-{
-    tp->base++;
-    if (tp->base >= 50)
-    {
-        __Scheduler_Handler(TAREA_1, (sch_buffer *)&__DATOS_SCH_VMA_LIN);
-        tp->base = 0x00;
-        tp->milisegundos = tp->milisegundos + 5;
-        if (tp->milisegundos >= 1000)
-        {
-            tp->milisegundos = 0x0000;
-            tp->segundos++;
-            if (tp->segundos >= 60)
-            {
-                tp->segundos = 0x00;
-                tp->minutos++;
-                if (tp->minutos >= 60)
-                {
-                    tp->minutos = 0x00;
-                    tp->horas++;
-                    if (tp->horas >= 24)
-                    {
-                        tp->horas = 0x00;
-                    }
-                }
-            }
-        }
-    }
-}
-
-//----------------------------------------------------------
-//                   SCHEDULER
-//----------------------------------------------------------
-
-/*----------------------------------------------------------
- * __Scheduler_Handler
- *----------------------------------------------------------*/
-
-/**
- * @brief Funcion para manejar distintas tareas
- * @return nada
- * @param byte Tarea
- * @param sch_buffer* sc_p, VMA de la Estructura de Scheduler
- */
-__attribute__((section(".functions"))) void __Scheduler_Handler(byte Tarea, sch_buffer *sc_p)
-{
-    if (Tarea == TAREA_1)
-    {
-        sc_p->Tarea1 = 0x01;
-    }
-}
-
 //----------------------------------------------------------
 //                   TABLAS DE SISTEMA
 //----------------------------------------------------------
@@ -590,8 +509,9 @@ __attribute__((section(".functions"))) void __screen_buffer_init(screen_buffer *
             sb_p->buffer[i][j] = 0x1E00; //inicializo todo en caracteres blanco
         }
     }
-    __screen_buffer_print(17, 1, sb_p, "Ejercicio N#10 - Paginacion Real", 32);
+    __screen_buffer_print(17, 1, sb_p, "Ejercicio N#11 - Conmutacion de Tareas", 38);
     __screen_buffer_print(5, 10, sb_p, "Promedio: 0x", 12);
+    __screen_buffer_print(5, 11, sb_p, "Sumatoria:0x", 12);
     __screen_buffer_print(5, 22, sb_p, "Rios Taurasi Nicolas - TD3 UTN FRBA - CL 2021", 45);
 }
 
@@ -612,7 +532,7 @@ __attribute__((section(".functions"))) void __screen_buffer_printc(byte X,
     static byte inX = 0;
     inY = Y;
     inX = X;
-    sb_p->buffer[inY][inX] = (sb_p->buffer[inY][inX] & 0xFF00) | (caracter & 0xFF);
+    sb_p->buffer[inY][inX] = 0x1E00  | (caracter & 0xFF);
 }
 
 /**
@@ -636,7 +556,7 @@ __attribute__((section(".functions"))) void __screen_buffer_print(byte inicioX,
     inX = inicioX;
     for (i = 0; i < caracteres; i++)
     {
-        sb_p->buffer[inY][inX + i] = sb_p->buffer[inY][inX + i] | (buffer[i] & 0xFF);
+        sb_p->buffer[inY][inX + i] = 0x1E00 | (buffer[i] & 0xFF);
     }
 }
 

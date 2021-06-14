@@ -20,6 +20,15 @@ GLOBAL cargo_idt_desde_codigo
 GLOBAL cargo_DTP_desde_codigo
 GLOBAL cargo_TP_desde_codigo
 GLOBAL cargo_CR3
+GLOBAL DTP_task01
+GLOBAL DTP_task02
+GLOBAL DTP_task03
+GLOBAL DTP_task04
+
+GLOBAL paginacion_tarea_1
+GLOBAL paginacion_tarea_2
+GLOBAL paginacion_tarea_3
+GLOBAL paginacion_tarea_4
 
 ;Labels utiles para IDT/GDT
 EXTERN CS_SEL_32
@@ -55,6 +64,11 @@ EXTERN  __levanto_pagina
 
 ;Labels para Paginación
 EXTERN __PAGE_TABLES_VMA_LIN
+EXTERN __PAGE_TABLES_VMA_TASK01_LIN
+EXTERN __PAGE_TABLES_VMA_TASK02_LIN
+EXTERN __PAGE_TABLES_VMA_TASK03_LIN
+EXTERN __PAGE_TABLES_VMA_TASK04_LIN
+
 EXTERN __PDT_Stack_Sistema
 EXTERN __PDT_Sistema
 EXTERN __PT_SYS_TABLES         
@@ -69,8 +83,27 @@ EXTERN __PT_TASK_01_TEXT
 EXTERN __PT_TASK_01_BSS
 EXTERN __PT_TASK_01_DATA
 EXTERN __PT_TASK_01_RODATA
+EXTERN __PT_TASK_02_TEXT
+EXTERN __PT_TASK_02_BSS
+EXTERN __PT_TASK_02_DATA
+EXTERN __PT_TASK_02_RODATA
+EXTERN __PT_TASK_03_TEXT
+EXTERN __PT_TASK_03_BSS
+EXTERN __PT_TASK_03_DATA
+EXTERN __PT_TASK_03_RODATA
+EXTERN __PT_TASK_04_TEXT
+EXTERN __PT_TASK_04_BSS
+EXTERN __PT_TASK_04_DATA
+EXTERN __PT_TASK_04_RODATA
 EXTERN __PT_STACK_SISTEMA
 EXTERN __PT_TASK_01_STACK      
+EXTERN __PT_TASK_02_STACK      
+EXTERN __PT_TASK_03_STACK      
+EXTERN __PT_TASK_04_STACK      
+EXTERN __PT_TSS_T1
+EXTERN __PT_TSS_T2
+EXTERN __PT_TSS_T3
+EXTERN __PT_TSS_T4
 
 ;------------------------------------------------------------------------------------------------------------
 ;		init_pic
@@ -224,6 +257,28 @@ cargo_gdt_desde_codigo:
     push 0x00000002 ;offset   
     call __carga_GDT
     add esp,16
+
+    ;TSS_SEL
+    push 0x00000C89 ;atributos
+                    ;G=1 Maximo offset = Limite*0x1000+0xFFF
+                    ;D/B=1 Big, Segmento de 32
+                    ;L=0 No 64 bits nativo
+                    ;AVL=0 No utilizado
+                    
+                    ;P=1 Presente en el segmento
+                    ;DPL=00 Privilegio nivel 0 - Kernel
+                    ;S=0 Descriptor de Codigo/Datos
+                    
+                    ;D/C=1 Segmento de Codigo 
+                    ;ED=0 
+                    ;W=0 Escribible
+                    ;A=0 por defecto No Accedido
+    push 0x00000067 ;limite
+    push 0x02000000 ;base
+    push 0x00000003 ;offset   
+    call __carga_GDT
+    add esp,16
+
     ;xchg bx,bx
 
 ret
@@ -537,7 +592,7 @@ cargo_DTP_desde_codigo:
     ;------------------------
     ; DTP (0x5) 0x0140-0000 a 0x017F-FFFF
     ;------------------------
-    push PAG_P_NO          
+    push PAG_P_YES          
     push PAG_RW_R 
     push PAG_US_SUP
     push PAG_PWT_NO
@@ -549,21 +604,6 @@ cargo_DTP_desde_codigo:
     push dword(__PAGE_TABLES_VMA_LIN)             
     call __carga_DTP
     add esp,40
-
-    push PAG_P_NO
-    push PAG_RW_R
-    push PAG_US_SUP
-    push PAG_PWT_NO
-    push PAG_PCD_NO
-    push PAG_A
-    push PAG_D
-    push PAG_PAT
-    push PAG_G_YES
-    push dword(0xA0000000)
-    push 0x000
-    push dword(__PAGE_TABLES_VMA_LIN+0x1000+0x1000*0x05)
-    call __carga_TP 
-    add esp,48
 
     ;------------------------
     ; DTP (0x2FC) 0x1FC0-0000 a 0x1FFF-FFFF
@@ -797,25 +837,7 @@ cargo_TP_desde_codigo:
   add esp,48
 
   ;-----------------------------------------------------------------
-  ;9° Pagina de 4K - TEXT Tarea 1 0x0031-0000 a 0x0031-0FFF
-  ;-----------------------------------------------------------------
-  push PAG_P_YES
-  push PAG_RW_R
-  push PAG_US_SUP
-  push PAG_PWT_NO
-  push PAG_PCD_NO
-  push PAG_A
-  push PAG_D
-  push PAG_PAT
-  push PAG_G_YES
-  push dword(__PT_TASK_01_TEXT)
-  push 0x310
-  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
-  call __carga_TP 
-  add esp,48
-
-  ;-----------------------------------------------------------------
-  ;10° Pagina de 4K - BSS Tarea 1 0x0032-0000 a 0x0032-0FFF
+  ; Pagina de 4K - TSS 0x01F0-0000
   ;-----------------------------------------------------------------
   push PAG_P_YES
   push PAG_RW_W
@@ -826,15 +848,12 @@ cargo_TP_desde_codigo:
   push PAG_D
   push PAG_PAT
   push PAG_G_YES
-  push dword(__PT_TASK_01_BSS)
-  push 0x320
+  push dword(__PT_TSS_T1)
+  push 0x1F0
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
-
-  ;-----------------------------------------------------------------
-  ;11° Pagina de 4K - DATA Tarea 1 0x0033-0000 a 0x0033-0FFF
-  ;-----------------------------------------------------------------
+  
   push PAG_P_YES
   push PAG_RW_W
   push PAG_US_SUP
@@ -844,17 +863,14 @@ cargo_TP_desde_codigo:
   push PAG_D
   push PAG_PAT
   push PAG_G_YES
-  push dword(__PT_TASK_01_DATA)
-  push 0x330
+  push dword(__PT_TSS_T2)
+  push 0x1F1
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
 
-  ;-----------------------------------------------------------------
-  ;12° Pagina de 4K - RODATA Tarea 1 0x0034-0000 a 0x0034-0FFF
-  ;-----------------------------------------------------------------
   push PAG_P_YES
-  push PAG_RW_R
+  push PAG_RW_W
   push PAG_US_SUP
   push PAG_PWT_NO
   push PAG_PCD_NO
@@ -862,11 +878,28 @@ cargo_TP_desde_codigo:
   push PAG_D
   push PAG_PAT
   push PAG_G_YES
-  push dword(__PT_TASK_01_RODATA)
-  push 0x340
+  push dword(__PT_TSS_T3)
+  push 0x1F2
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
   call __carga_TP 
   add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TSS_T4)
+  push 0x1F3
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
+  call __carga_TP 
+  add esp,48
+
+
   
   ;-----------------------------------------------------------------
   ; Si llegaste a leer esto tomate un cafe, porque lo que viene es durisimo
@@ -901,6 +934,111 @@ cargo_TP_desde_codigo:
   ;   *Stack Tarea 1   0x0078-F000
   ;------------------------
 
+
+  ;0xFFFF-0000 / 0x0040-0000 = 1023,98
+  ;1023*4MB = 0x2FC0-0000
+  ;0x3FF*0x400000 = 0xFFC00000
+  ;------------------------
+  ;(0xFFC) 0xFFC0-0000 a 0xFFFF-FFFF
+  ;   *Init ROM de 64K 0xFFFF-0000 a 0xFFFF-0FFF
+  ;   *VGA INIT        0xFFFF-E000 a 0xFFFF-EFFF
+  ;   *                0xFFFF-F000 a 0xFFFF-FFFF
+  ;   -INIT 32         0xFFFF-F700 a 0xFFFF-FFFF
+  ;   -Funciones ROM   0xFFFF-F900 a 0xFFFF-FFFF
+  ;   -Sys Tables 16   0xFFFF-FE00 a 0xFFFF-FFFF
+  ;   -Reset Vector    0xFFFF-FF00 a 0xFFFF-FFFF
+  ;------------------------
+
+  ;paginas 14-29 (ROM de 64KB)
+  call __levanto_pagina
+  call __pagina_rom
+
+ret
+
+;------------------------------------------------------------------------------------------------------------
+;		paginacion_tarea_1
+;
+;	Funcion: 	Funcion para paginar las direcciones de la Tarea 1
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+paginacion_tarea_1:
+ 
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PAGE_TABLES_VMA_TASK01_LIN)
+  push 0x00C
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x00))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_01_TEXT)
+  push 0x310
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_01_BSS)
+  push 0x320
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_01_DATA)
+  push 0x330
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_01_RODATA)
+  push 0x340
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x04))
+  call __carga_TP 
+  add esp,48
+
   ;-----------------------------------------------------------------
   ;14° Pagina de 4K - Stack de TASK 01 0x1FFF-F000 a 0x1FFF-FFFF    
   ;-----------------------------------------------------------------
@@ -920,23 +1058,708 @@ cargo_TP_desde_codigo:
   add esp,48
 
 
-  ;0xFFFF-0000 / 0x0040-0000 = 1023,98
-  ;1023*4MB = 0x2FC0-0000
-  ;0x3FF*0x400000 = 0xFFC00000
-  ;------------------------
-  ;(0xFFC) 0xFFC0-0000 a 0xFFFF-FFFF
-  ;   *Init ROM de 64K 0xFFFF-0000 a 0xFFFF-0FFF
-  ;   *VGA INIT        0xFFFF-E000 a 0xFFFF-EFFF
-  ;   *                0xFFFF-F000 a 0xFFFF-FFFF
-  ;   -INIT 32         0xFFFF-F700 a 0xFFFF-FFFF
-  ;   -Funciones ROM   0xFFFF-F900 a 0xFFFF-FFFF
-  ;   -Sys Tables 16   0xFFFF-FE00 a 0xFFFF-FFFF
-  ;   -Reset Vector    0xFFFF-FF00 a 0xFFFF-FFFF
-  ;------------------------
+ret
 
-  ;paginas 14-29 (ROM de 64KB)
-  call __levanto_pagina
-  call __pagina_rom
+;------------------------------------------------------------------------------------------------------------
+;		paginacion_tarea_2
+;
+;	Funcion: 	Funcion para paginar las direcciones de la Tarea 2
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+paginacion_tarea_2:
+  
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PAGE_TABLES_VMA_TASK02_LIN)
+  push 0x00D
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x00))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_02_TEXT)
+  push 0x010
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_02_BSS)
+  push 0x020
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_02_DATA)
+  push 0x030
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_02_RODATA)
+  push 0x040
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_02_STACK)
+  push 0x390
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
+  call __carga_TP 
+  add esp,48
+
+ret
+
+
+;------------------------------------------------------------------------------------------------------------
+;		paginacion_tarea_3
+;
+;	Funcion: 	Función para paginar las direcciones de la Tarea 3
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+paginacion_tarea_3:
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PAGE_TABLES_VMA_TASK03_LIN)
+  push 0x00E
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x00))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_03_TEXT)
+  push 0x110
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_03_BSS)
+  push 0x120
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_03_DATA)
+  push 0x130
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_03_RODATA)
+  push 0x140
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_03_STACK)
+  push 0x391
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
+  call __carga_TP 
+  add esp,48
+
+ret
+
+;------------------------------------------------------------------------------------------------------------
+;		paginacion_tarea_4
+;
+;	Funcion: 	Función para paginar las direcciones de la Tarea 4
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+paginacion_tarea_4:
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PAGE_TABLES_VMA_TASK04_LIN)
+  push 0x00F
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x00))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_04_TEXT)
+  push 0x210
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_04_BSS)
+  push 0x220
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_04_DATA)
+  push 0x230
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_R
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_04_RODATA)
+  push 0x240
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_TASK_04_STACK)
+  push 0x392
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
+  call __carga_TP 
+  add esp,48
+
+ret
+
+
+;------------------------------------------------------------------------------------------------------------
+;		DTP_task01
+;
+;	Funcion: 	Función que carga las DTP correspondientes a la tarea 1.
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+
+
+DTP_task01:
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN+0x5000+0x1000*0x00)      
+    push 0x00                               
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN+0x5000+0x1000*0x03)      
+    push 0x03                               
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN+0x5000+0x1000*0x04)      
+    push 0x04                               
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN+0x5000+0x1000*0x7F)      
+    push 0x7F                               
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN+0x5000+0x1000*0x001)      
+    push 0x001                               
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN)            
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN+0x5000+0x1000*0x3FF)      
+    push 0x3FF                               
+    push dword(__PAGE_TABLES_VMA_TASK01_LIN)            
+    call __carga_DTP
+    add esp,40
+ret
+
+
+;------------------------------------------------------------------------------------------------------------
+;		DTP_task02
+;
+;	Funcion: 	Función que carga las DTP correspondientes a la tarea 2
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+
+DTP_task02:
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN+0x4000+0x1000*0x00)      
+    push 0x00                              
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN+0x4000+0x1000*0x03)      
+    push 0x03                         
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN+0x4000+0x1000*0x04)      
+    push 0x04                               
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN+0x4000+0x1000*0x05)      
+    push 0x05                               
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN+0x4000+0x1000*0x7F)      
+    push 0x7F                               
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN)            
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN+0x4000+0x1000*0x001)      
+    push 0x001                               
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN)            
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN+0x4000+0x1000*0x3FF)      
+    push 0x3FF                               
+    push dword(__PAGE_TABLES_VMA_TASK02_LIN)            
+    call __carga_DTP
+    add esp,40
+
+
+ret
+
+;------------------------------------------------------------------------------------------------------------
+;		DTP_task03
+;
+;	Funcion: 	Función que carga el las DTP para la tarea 3
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+
+DTP_task03:
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN+0x3000+0x1000*0x00)      
+    push 0x00                               
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN+0x3000+0x1000*0x03)      
+    push 0x03                               
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN+0x3000+0x1000*0x04)      
+    push 0x04                               
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN+0x3000+0x1000*0x05)      
+    push 0x05                               
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN+0x3000+0x1000*0x7F)      
+    push 0x7F                               
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN+0x3000+0x1000*0x01)      
+    push 0x01                               
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN+0x3000+0x1000*0x3FF)      
+    push 0x3FF                               
+    push dword(__PAGE_TABLES_VMA_TASK03_LIN)            
+    call __carga_DTP
+    add esp,40
+ret
+
+;------------------------------------------------------------------------------------------------------------
+;		DTP_task01
+;
+;	Funcion: 	Función que carga el las DTP correspondienes para la tarea 4
+;
+;				
+;------------------------------------------------------------------------------------------------------------
+DTP_task04:
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN+0x2000+0x1000*0x00)      
+    push 0x00                               
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN+0x2000+0x1000*0x03)      
+    push 0x03                               
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN+0x2000+0x1000*0x04)      
+    push 0x04                               
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN+0x2000+0x1000*0x05)      
+    push 0x05                               
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN+0x2000+0x1000*0x07F)      
+    push 0x7F                               
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN+0x2000+0x1000*0x001)      
+    push 0x01                               
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN)             
+    call __carga_DTP
+    add esp,40
+
+    push PAG_P_YES          
+    push PAG_RW_W
+    push PAG_US_SUP
+    push PAG_PWT_NO
+    push PAG_PCD_NO
+    push PAG_A
+    push PAG_PS_4K
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN+0x2000+0x1000*0x3FF)      
+    push 0x3FF                               
+    push dword(__PAGE_TABLES_VMA_TASK04_LIN)            
+    call __carga_DTP
+    add esp,40
 ret
 
 ;------------------------------------------------------------------------------------------------------------
@@ -946,7 +1769,6 @@ ret
 ;
 ;				
 ;------------------------------------------------------------------------------------------------------------
-
 cargo_CR3:
   xor eax,eax
   push __PAGE_TABLES_VMA_LIN
@@ -957,3 +1779,4 @@ cargo_CR3:
   add esp,8
   mov cr3,eax
 ret
+

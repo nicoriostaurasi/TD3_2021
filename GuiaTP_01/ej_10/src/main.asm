@@ -12,6 +12,8 @@ EXTERN CS_SEL_32
 EXTERN __TECLADO_ISR_VMA
 
 GLOBAL data_teclado
+GLOBAL cr2_ram_main
+GLOBAL direccion_carga_local_main
 
 GLOBAL kernel32_code_size
 GLOBAL kernel32_init
@@ -28,6 +30,7 @@ EXTERN task01_main
 EXTERN __tiempo_iniciar
 EXTERN __DATOS_TIMER_VMA_LIN
 EXTERN __DATOS_SCH_VMA_LIN
+EXTERN __MEMORIA_FISICA_DINAMICA
 
 section .kernel32
 USE32
@@ -42,12 +45,17 @@ kernel32_init:
     xor ebx,ebx
     xor ecx,ecx
     xor edx,edx
-
-;    xchg bx,bx
-;    ;leo una pagina no presente para generar un PF
-;    mov dword eax,[0x01200000]
-;    xchg bx,bx
-
+ 
+    ;Inicio la direccion de carga dinamica como lo pide el enunciado
+    mov dword [direccion_carga_local_main],__MEMORIA_FISICA_DINAMICA
+    
+    
+    ;leo una pagina no presente para generar un PF
+    ;mov dword eax,[0x1FFFFFF0]
+    ;mov dword eax,[0x0000D000]
+    ;mov dword eax,[0x00003000]
+    ;mov dword eax,[0x00005000]
+    
     ;Inicializo el ring buffer
     push __DATOS_VMA_LIN
     call __ring_buffer_init
@@ -97,15 +105,30 @@ times 15 db 0x00
 times 16 db 0x00
 
 reserva_ram_timer:
-times 16 db 0xFF
+times 16 db 0x00
 
 reserva_ram_promedio:
-times 16 db 0xAA
+times 16 db 0x00
 
 reserva_ram_sch:
-times 32 db 0xEE
+times 32 db 0x00
 
 reserva_ram_conv:
-times 16 db 0x33
+times 16 db 0x00
+times 16 db 0x00
+times 16 db 0x00
+
+times 64 db 0x00
+
+direccion_carga_local_main:
+dd 0x0A000000
+;times 16 db 0x00
+align 32
+cr2_ram_main:
+dd 0x00000000
+align 32
+
+
+
 
 

@@ -25,14 +25,10 @@ __attribute__(( section(".data")))int dummy_task01;
  */
 __attribute__(( section(".functions_task01"))) void task01_main(tabla_digitos* td_p,sch_buffer* sc_p)
 {
-    if(sc_p->Tarea1 == 0x01)
-    {
     task_promedio(td_p);
     task_show_VGA(td_p);
-    task_show_time((tiempos*) &__DATOS_TIMER_VMA_LIN);    
+    task_show_time((tiempos*) &__DATOS_TIMER_VMA_LIN);
     task_read_mem(td_p);
-    sc_p->Tarea1 = 0x00;
-    }
 }
 
 /**
