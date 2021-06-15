@@ -1,7 +1,7 @@
 /**
- * @file task02.c
+ * @file task03.c
  * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
- * @brief Funciones Tarea 2 y 3
+ * @brief Funciones Tarea 3
  * @version 0.1
  * @date 09-06-2021
  * 
@@ -9,20 +9,20 @@
  * 
  */
 
-#include "../inc/task02.h"
+#include "../inc/task03.h"
 
 
 /**
  * @brief Variable dummy para no harcodear la copia de .data
  * 
  */
-__attribute__(( section(".data")))int dummy_task0X;
+__attribute__(( section(".data")))int dummy_task03;
 
 /**
  * @brief Variable dummy para no harcodear la copia de .rodata
  * 
  */
-__attribute__(( section(".rodata")))int dummy_task0X_2;
+__attribute__(( section(".rodata")))int dummy_task03_2;
 
 
 /**
@@ -30,10 +30,10 @@ __attribute__(( section(".rodata")))int dummy_task0X_2;
  * @param tabla_digitos* td_p, puntero a la tabla de digitos
  * @return nada
  */
-__attribute__(( section(".functions_task02"))) void task02_main(tabla_digitos* td_p)
+__attribute__(( section(".functions_task03"))) void task03_main(tabla_digitos* td_p)
 {
-    task_sumatoria(td_p);
-    task_02_show_VGA(td_p);
+    task03_sumatoria(td_p);
+    task_03_show_VGA(td_p);
     asm("hlt"::);
 }
 
@@ -43,7 +43,7 @@ __attribute__(( section(".functions_task02"))) void task02_main(tabla_digitos* t
  * @return nada
  * 
  */
-__attribute__(( section(".functions_task02"))) void task_sumatoria(tabla_digitos* td_p)
+__attribute__(( section(".functions_task03"))) void task03_sumatoria(tabla_digitos* td_p)
 {
     /*acumula*/
     static int i=0;
@@ -60,7 +60,7 @@ __attribute__(( section(".functions_task02"))) void task_sumatoria(tabla_digitos
  * @param tabla_digitos* td_p
  * @return nada
  */
-__attribute__(( section(".functions_task02"))) void task_02_show_VGA(tabla_digitos* td_p)
+__attribute__(( section(".functions_task03"))) void task_03_show_VGA(tabla_digitos* td_p)
 {
     static dword parte_alta=0,parte_baja=0; //palabras de 32 bits
     static byte aux=0;
@@ -75,7 +75,7 @@ __attribute__(( section(".functions_task02"))) void task_02_show_VGA(tabla_digit
     {
     aux=aux+7;
     }
-    __screen_buffer_printc(16+5+15-i,11,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
+    __screen_buffer_printc(16+5+15-i,12,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
     }
 
     aux=0;
@@ -88,6 +88,6 @@ __attribute__(( section(".functions_task02"))) void task_02_show_VGA(tabla_digit
     {
     aux=aux+7;
     }
-    __screen_buffer_printc(8+5+15-i,11,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
+    __screen_buffer_printc(8+5+15-i,12,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
     }
 }

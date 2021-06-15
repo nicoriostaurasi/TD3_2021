@@ -369,8 +369,9 @@ defino la seccion de salida segun la seccion de entrada
 
     .teclados_isr __TECLADO_ISR_VMA_LIN :
         AT (__TECLADO_ISR_LMA)
-        { *(.teclado_and_ISR)
-          *(.utils_scheduler)} > ram 
+        { *(.teclado_and_ISR);
+          *(.utils_scheduler);
+          ./bin/scheduler.elf(.text)} > ram 
     __teclados_isr_size = SIZEOF(.teclados_isr);
 
     __DATOS_LMA = LOADADDR(.teclados_isr) + SIZEOF(.teclados_isr);
@@ -424,7 +425,7 @@ defino la seccion de salida segun la seccion de entrada
     /*-----TAREA 2-----*/
     .task02_texto __TASK_02_TEXT_VMA_LIN :
     AT (__TASK_02_TEXT_LMA)
-    {*(.functions_task023);
+    {*(.functions_task02);
        ./bin/task02.elf(.text);
        ./bin/task02.elf(.note*);} > ram
     __codigo_task_02 = SIZEOF(.task02_texto);
@@ -453,36 +454,36 @@ defino la seccion de salida segun la seccion de entrada
     __TASK_03_TEXT_LMA = LOADADDR(.task02_rodata) + SIZEOF(.task02_rodata);
 
     /*-----TAREA 3-----*/
-/*
+
     .task03_texto __TASK_03_TEXT_VMA_LIN :
     AT (__TASK_03_TEXT_LMA)
-    {./bin/task02.elf(.functions_task023);
-     ./bin/task02.elf(.note.gnu.property);
-     ./bin/task02.elf(.note.gnu.note);} > ram
+    {*(.functions_task03);
+     ./bin/task03.elf(.note.gnu.property);
+     ./bin/task03.elf(.note.gnu.note);} > ram
     __codigo_task_03 = SIZEOF(.task03_texto);
 
     __TASK_03_BSS_LMA = LOADADDR(.task03_texto) + SIZEOF(.task03_texto);
 
     .task03_bss __TASK_03_BSS_VMA_LIN :
     AT (__TASK_03_BSS_LMA)
-    {./bin/task02.elf(.bss);} > ram
+    {./bin/task03.elf(.bss);} > ram
     __bss_task_03 = SIZEOF(.task03_bss);
 
     __TASK_03_DATA_LMA = LOADADDR(.task03_bss) + SIZEOF(.task03_bss);
 
     .task03_data __TASK_03_DATA_VMA_LIN :
     AT (__TASK_03_DATA_LMA)
-    {./bin/task02.elf(.data);} > ram
+    {./bin/task03.elf(.data);} > ram
     __data_task_03 = SIZEOF(.task03_data);
 
     __TASK_03_RODATA_LMA = LOADADDR(.task03_data) + SIZEOF(.task03_data);  
 
     .task03_rodata __TASK_03_RODATA_VMA_LIN :
     AT (__TASK_03_RODATA_LMA)
-    {./bin/task02.elf(.rodata);} > ram
+    {./bin/task03.elf(.rodata);} > ram
     __rodata_task_03 = SIZEOF(.task03_rodata);
-*/
-    __TASK_04_TEXT_LMA = LOADADDR(.task02_rodata) + SIZEOF(.task02_rodata);
+
+    __TASK_04_TEXT_LMA = LOADADDR(.task03_rodata) + SIZEOF(.task03_rodata);
 
     /*-----TAREA 4-----*/
     .task04_texto __TASK_04_TEXT_VMA_LIN :

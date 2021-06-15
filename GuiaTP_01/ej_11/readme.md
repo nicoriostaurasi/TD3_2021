@@ -49,7 +49,7 @@
 
 * **reset.asm**: Contiene el vector de reset. [Fuente](src/reset.asm) 
 
-* **scheduler.asm**: Contiene el Algoritmo para manejar varias tareas de manera secuencial y cooperativa, el mismo guarda el contexto de cada tarea y lo recupera al volver a realizar sus distintas llamadas. También se ocupa de la protección entre tareas para que no puedan ver su contenido de codigo y datos entre ellas. [Fuente](src/scheduler.asm). Para el diseño del mismo se implemento el siguiente [diagrama de estados](doc/Scheduler_TD3.pdf)
+* **scheduler.asm**: Contiene el Algoritmo para manejar varias tareas de manera secuencial y cooperativa, el mismo guarda el contexto de cada tarea y lo recupera al volver a realizar sus distintas llamadas. También se ocupa de la protección entre tareas para que no puedan ver su contenido de codigo y datos entre ellas. [Fuente](src/scheduler.asm). Para el diseño del mismo se implemento el siguiente [diagrama de estados](Scheduler_TD3.pdf)
 
 * **sys_gdt_table16.asm**: Contiene la tabla GDT 16.
 [Fuente](src/sys_gdt_table16.asm)
@@ -57,6 +57,8 @@
 * **task01.c**: Contiene las funciones de la Tarea 1: Escribir en VGA, Calcular promedio.[Fuente](src/task01.c)
 
 * **task02.c**: Contiene las funciones de la Tarea 2: Escribir en VGA, Calcular Sumatoria.[Fuente](src/task02.c)
+
+* **task03.c**: Contiene las funciones de la Tarea 3: Escribir en VGA, Calcular Sumatoria.[Fuente](src/task02.c)
 
 * **task04.c**: Contiene las funciones de la Tarea 4: Establecer el Procesador en alta impedancia.[Fuente](src/task04.c)
 
@@ -126,4 +128,4 @@ GNU ld (GNU Binutils for Ubuntu) 2.35.1
 * Las instrucciones no permiten realizar el promedio de un numero de 64 bits, por lo que por ahora se calcula la sumatoria y se imprime en hexa. *Solucionado realizando la división bit a bit en un algoritmo en C*
 * La guía propone una dirección para el Stack del Sistema que al mapearse su TP queda en una sección del mapa de memoria que contiene ROM, por lo que por el momento se esta mapeando en la posición de la errata (0X1FFF8000), al igual que la posición del stack de tarea 1 (0x1FFFF000).
 * En donde la guía indica *Dirección Inicial* debe decir *Dirección Física Inicial*
-* Se modificó la Dirección Física correspondiente a la sección *text* de la tarea 2 ya que la misma solapa las TP de la memoria ROM. 
+* Se modificó la Dirección Física correspondiente a la sección *text* de la tarea 2 ya que la misma solapa las TP de la memoria ROM.

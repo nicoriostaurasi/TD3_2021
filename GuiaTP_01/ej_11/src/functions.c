@@ -510,8 +510,9 @@ __attribute__((section(".functions"))) void __screen_buffer_init(screen_buffer *
         }
     }
     __screen_buffer_print(17, 1, sb_p, "Ejercicio N#11 - Conmutacion de Tareas", 38);
-    __screen_buffer_print(5, 10, sb_p, "Promedio: 0x", 12);
-    __screen_buffer_print(5, 11, sb_p, "Sumatoria:0x", 12);
+    __screen_buffer_print(5, 10, sb_p, "Promedio  T1: 0x", 16);
+    __screen_buffer_print(5, 11, sb_p, "Sumatoria T2: 0x", 16);
+    __screen_buffer_print(5, 12, sb_p, "Sumatoria T3: 0x", 16);
     __screen_buffer_print(5, 22, sb_p, "Rios Taurasi Nicolas - TD3 UTN FRBA - CL 2021", 45);
 }
 

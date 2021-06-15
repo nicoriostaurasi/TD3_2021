@@ -19,6 +19,7 @@
 !*.dts
 !*.gitignore
 !*.md
+!*.pdf
 # Unignore all dirs
 !*/
 *.mod.c

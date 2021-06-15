@@ -65,10 +65,20 @@ EXTERN __bss_task_02
 EXTERN __data_task_02
 EXTERN __rodata_task_02
 
+EXTERN __codigo_task_03
+EXTERN __bss_task_03
+EXTERN __data_task_03
+EXTERN __rodata_task_03
+
 EXTERN __TASK_03_TEXT_VMA_PHI
 EXTERN __TASK_03_BSS_VMA_PHI
 EXTERN __TASK_03_DATA_VMA_PHI
 EXTERN __TASK_03_RODATA_VMA_PHI
+
+EXTERN __TASK_03_TEXT_LMA
+EXTERN __TASK_03_BSS_LMA    
+EXTERN __TASK_03_DATA_LMA   
+EXTERN __TASK_03_RODATA_LMA 
 
 EXTERN __TASK_04_TEXT_LMA
 EXTERN __TASK_04_BSS_LMA    
@@ -273,9 +283,9 @@ start32_launcher:
     ;desempaqueto la ROM y llevo las secciones de TASK03 a RAM
     push ebp
     mov ebp,esp
-    push __codigo_task_02
+    push __codigo_task_03
     push __TASK_03_TEXT_VMA_PHI
-    push __TASK_02_TEXT_LMA
+    push __TASK_03_TEXT_LMA
     call __fast_memcpy
     leave
     cmp eax,1
@@ -283,9 +293,9 @@ start32_launcher:
 
     push ebp
     mov ebp,esp
-    push __bss_task_02
+    push __bss_task_03
     push __TASK_03_BSS_VMA_PHI
-    push __TASK_02_BSS_LMA
+    push __TASK_03_BSS_LMA
     call __fast_memcpy
     leave
     cmp eax,1
@@ -293,9 +303,9 @@ start32_launcher:
 
     push ebp
     mov ebp,esp
-    push __data_task_02
+    push __data_task_03
     push __TASK_03_DATA_VMA_PHI
-    push __TASK_02_DATA_LMA
+    push __TASK_03_DATA_LMA
     call __fast_memcpy
     leave
     cmp eax,1
@@ -303,9 +313,9 @@ start32_launcher:
 
     push ebp
     mov ebp,esp
-    push __rodata_task_02
+    push __rodata_task_03
     push __TASK_03_RODATA_VMA_PHI
-    push __TASK_02_RODATA_LMA
+    push __TASK_03_RODATA_LMA
     call __fast_memcpy
     leave
     cmp eax,1

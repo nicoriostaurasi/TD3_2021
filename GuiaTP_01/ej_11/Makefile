@@ -17,7 +17,7 @@ LDFLAGS = -z max-page-size=0x01000 --oformat=binary -m elf_i386
 LDSCRIPT = linker.ld
 ODFLAGS = -CprsSx --prefix-addresses
 #en objs guardo todos mis objetos elf
-OBJS = $(BINPATH)init32.elf $(BINPATH)reset.elf $(BINPATH)init16.elf $(BINPATH)main.elf $(BINPATH)task01.elf $(BINPATH)timer.elf $(BINPATH)task02.elf $(BINPATH)task04.elf $(BINPATH)functions.elf $(BINPATH)functions_rom.elf $(BINPATH)utils_32.elf $(BINPATH)scheduler.elf $(BINPATH)isr_keyboard.elf $(BINPATH)sys_gdt_table16.elf $(BINPATH)init_screen.elf 
+OBJS = $(BINPATH)init32.elf $(BINPATH)reset.elf $(BINPATH)init16.elf $(BINPATH)main.elf $(BINPATH)task01.elf $(BINPATH)timer.elf $(BINPATH)task02.elf $(BINPATH)task03.elf $(BINPATH)task04.elf $(BINPATH)functions.elf $(BINPATH)functions_rom.elf $(BINPATH)utils_32.elf $(BINPATH)scheduler.elf $(BINPATH)isr_keyboard.elf $(BINPATH)sys_gdt_table16.elf $(BINPATH)init_screen.elf 
 #obj temp
 #OBJS = $(BINPATH)reset.elf $(BINPATH)sys_gdt_table16.elf $(BINPATH)functions.elf
 
@@ -105,6 +105,11 @@ $(BINPATH)task01.elf: $(SRCPATH)task01.c
 	$(CC) $(CFLAGS) $< -o $@ -l $@.lst
 
 $(BINPATH)task02.elf: $(SRCPATH)task02.c
+	@echo Generando $@
+	mkdir -p bin
+	$(CC) $(CFLAGS) $< -o $@ -l $@.lst
+
+$(BINPATH)task03.elf: $(SRCPATH)task03.c
 	@echo Generando $@
 	mkdir -p bin
 	$(CC) $(CFLAGS) $< -o $@ -l $@.lst

@@ -45,6 +45,7 @@ GLOBAL scheduler_ASM
 EXTERN return_scheduler_ASM
 EXTERN ContadorTarea1
 EXTERN ContadorTarea2
+EXTERN ContadorTarea3
 EXTERN TareaActual,TareaProxima
 
 %define Tarea_1 1
@@ -53,10 +54,15 @@ EXTERN TareaActual,TareaProxima
 %define Tarea_3 3
 %define TC_T1 49
 %define TC_T2 19
+%define TC_T3 9
 
 scheduler_ASM:
     inc byte [ContadorTarea1]       
     inc byte [ContadorTarea2]       
+    inc byte [ContadorTarea3]
+
+    cmp byte [ContadorTarea3],TC_T3
+    jg llegue_a_10
 
     cmp byte [ContadorTarea2],TC_T2
     jg llegue_a_20
@@ -65,7 +71,11 @@ scheduler_ASM:
     jg llegue_a_50
 
     jmp CargoTarea4
- 
+
+    llegue_a_10:
+    mov byte [ContadorTarea3],0x00
+    jmp CargoTarea3
+
     llegue_a_20:
     mov byte [ContadorTarea2],0x00
     jmp CargoTarea2
@@ -83,6 +93,8 @@ scheduler_ASM:
     je fin ;misma tarea no hago nada
     cmp byte [TareaActual],Tarea_2
     je Salvar_Tarea_2
+    cmp byte [TareaActual],Tarea_3
+    je Salvar_Tarea_3
     cmp byte [TareaActual],Tarea_4
     je Salvar_Tarea_4
     jmp fin
@@ -93,10 +105,23 @@ scheduler_ASM:
     je fin ;misma tarea no hago nada
     cmp byte [TareaActual],Tarea_1
     je Salvar_Tarea_1
+    cmp byte [TareaActual],Tarea_3
+    je Salvar_Tarea_3
     cmp byte [TareaActual],Tarea_4
     je Salvar_Tarea_4
     jmp fin
 
+    CargoTarea3:
+    mov byte [TareaProxima],Tarea_3
+    cmp byte [TareaActual],Tarea_3
+    je fin ;misma tarea no hago nada
+    cmp byte [TareaActual],Tarea_1
+    je Salvar_Tarea_1
+    cmp byte [TareaActual],Tarea_2
+    je Salvar_Tarea_2
+    cmp byte [TareaActual],Tarea_4
+    je Salvar_Tarea_4
+    jmp fin
 
     CargoTarea4:
     mov byte [TareaProxima],Tarea_4
@@ -106,39 +131,38 @@ scheduler_ASM:
     je Salvar_Tarea_1
     cmp byte [TareaActual],Tarea_2
     je Salvar_Tarea_2
+    cmp byte [TareaActual],Tarea_3
+    je Salvar_Tarea_3
     jmp fin
 
 
     Salvar_Tarea_1:
     call guardar_contexto_tarea_1
     add esp,3*4
-
-    cmp byte[TareaProxima],Tarea_1
-    je Recargar_Tarea_1
-    cmp byte[TareaProxima],Tarea_2
-    je Recargar_Tarea_2
-    cmp byte[TareaProxima],Tarea_4
-    je Recargar_Tarea_4
+    jmp proxima_tarea
 
     Salvar_Tarea_2:
     call guardar_contexto_tarea_2
     add esp,3*4
+    jmp proxima_tarea
 
-    cmp byte[TareaProxima],Tarea_1
-    je Recargar_Tarea_1
-    cmp byte[TareaProxima],Tarea_2
-    je Recargar_Tarea_2
-    cmp byte[TareaProxima],Tarea_4
-    je Recargar_Tarea_4
+    Salvar_Tarea_3:
+    call guardar_contexto_tarea_3
+    add esp,3*4
+    jmp proxima_tarea
 
     Salvar_Tarea_4:
     call guardar_contexto_tarea_4
     add esp,3*4
+    jmp proxima_tarea
 
+    proxima_tarea:
     cmp byte[TareaProxima],Tarea_1
     je Recargar_Tarea_1
     cmp byte[TareaProxima],Tarea_2
     je Recargar_Tarea_2
+    cmp byte[TareaProxima],Tarea_3
+    je Recargar_Tarea_3
     cmp byte[TareaProxima],Tarea_4
     je Recargar_Tarea_4
 
@@ -177,6 +201,21 @@ scheduler_ASM:
     call cargo_cr3_task02 
     jmp fin
 
+    Recargar_Tarea_3:
+    call prender_todos_los_stacks    
+    mov eax,__PAGE_TABLES_VMA_TASK03_LIN
+    mov cr3,eax
+    mov esp,[__TSS_TASK_03_LIN+14*04]
+    jmp cargar_contexto_tarea_3
+    return_cargar_contexto_tarea_3:
+    mov byte [TareaActual],Tarea_3
+    call cargo_cr3_kernel
+    call prendo_contexto_tarea03
+    call apago_contexto_tarea01
+    call apago_contexto_tarea02
+    call apago_contexto_tarea04
+    call cargo_cr3_task03 
+    jmp fin
 
     Recargar_Tarea_4:
     call prender_todos_los_stacks
@@ -200,7 +239,6 @@ scheduler_ASM:
 
 jmp return_scheduler_ASM
 
-  EXTERN NULL_SEL
 
 guardar_contexto_tarea_1:
   ;Registros de Propósito General
@@ -215,7 +253,6 @@ guardar_contexto_tarea_1:
   mov eax,[esp+04*1]   ;EIP
   mov [__TSS_TASK_01_LIN+8*04],eax  ;EIP del stack
   mov eax,[esp+04*2]   ;CS
-  cmp eax,NULL_SEL
   mov [__TSS_TASK_01_LIN+19*04],eax ;reserved / CS del stack
   mov ax,[esp+04*3]  ;EFLAGS
   mov [__TSS_TASK_01_LIN+9*04],ax  ;EFLAGS del stack
@@ -250,7 +287,6 @@ guardar_contexto_tarea_2:
   mov eax,[esp+04*1]   ;EIP
   mov [__TSS_TASK_02_LIN+8*04],eax  ;EIP del stack
   mov eax,[esp+04*2]   ;CS
-  cmp eax,NULL_SEL
   mov [__TSS_TASK_02_LIN+19*04],eax ;reserved / CS del stack
   mov ax,[esp+04*3]  ;EFLAGS
   mov [__TSS_TASK_02_LIN+9*04],ax  ;EFLAGS del stack
@@ -269,6 +305,37 @@ guardar_contexto_tarea_2:
   mov [__TSS_TASK_02_LIN+14*04],ebp ;ESP
 ret
 ;jmp return_guardar_contexto_tarea_2
+
+guardar_contexto_tarea_3:
+  mov [__TSS_TASK_03_LIN+10*04],eax ;EAX
+  mov [__TSS_TASK_03_LIN+11*04],ecx ;ECX
+  mov [__TSS_TASK_03_LIN+12*04],edx ;EDX
+  mov [__TSS_TASK_03_LIN+13*04],ebx ;EBX
+  mov [__TSS_TASK_03_LIN+16*04],esi ;ESI
+  mov [__TSS_TASK_03_LIN+17*04],edi ;EDI
+
+  ;Registros del Stack
+  mov eax,[esp+04*1]   ;EIP
+  mov [__TSS_TASK_03_LIN+8*04],eax  ;EIP del stack
+  mov eax,[esp+04*2]   ;CS
+  mov [__TSS_TASK_03_LIN+19*04],eax ;reserved / CS del stack
+  mov ax,[esp+04*3]  ;EFLAGS
+  mov [__TSS_TASK_03_LIN+9*04],ax  ;EFLAGS del stack
+  ;El eflags no es 32b
+
+  ;Registros de Segmento
+  mov [__TSS_TASK_03_LIN+18*04],es ;reserved / ES    
+  mov [__TSS_TASK_03_LIN+20*04],ss ;reserved / SS
+  mov [__TSS_TASK_03_LIN+21*04],ds ;reserved / DS   
+  mov [__TSS_TASK_03_LIN+22*04],fs ;reserved / FS       
+  mov [__TSS_TASK_03_LIN+23*04],gs ;reserved / GS   
+
+  mov [__TSS_TASK_03_LIN+15*04],ebp ;EBP
+  mov ebp,esp
+  add ebp,4*4
+  mov [__TSS_TASK_03_LIN+14*04],ebp ;ESP
+ret
+
 
 guardar_contexto_tarea_4:
   mov [__TSS_TASK_04_LIN+10*04],eax ;EAX
@@ -322,7 +389,6 @@ cargar_contexto_tarea_1:
     mov eax,[__TSS_TASK_01_LIN+8*04] ;EIP
     mov [esp+4*0],eax
     mov eax,[__TSS_TASK_01_LIN+19*04] ;CS
-    cmp eax,NULL_SEL
     mov [esp+4*1],eax
     mov ax,[__TSS_TASK_01_LIN+9*04] ;EFLAGS
     or eax, 0x0202                   ;Enable int
@@ -382,6 +448,52 @@ cargar_contexto_tarea_2:
     mov edi,[__TSS_TASK_02_LIN+17*04]
 
 jmp return_cargar_contexto_tarea_2
+
+cargar_contexto_tarea_3:
+    mov ebp,[__TSS_TASK_03_LIN+15*04] 
+
+;Aca apago los stacks de las otras tareas, y paginas de otras tareas y cargo mis paginas
+    mov eax, cr0
+    xor  eax, X86_CR0_PG
+    mov cr0, eax
+
+    ;levanto TSS
+    call cargo_cr3_task03
+
+    
+    mov eax, cr0
+    xor  eax, X86_CR0_PG
+    mov cr0, eax
+    
+    push eax
+    push eax
+    push eax
+
+    ;Cargo los registros de segmento
+    mov es,[__TSS_TASK_03_LIN+18*04] ;reserved / ES
+    mov ss,[__TSS_TASK_03_LIN+20*04] ;reserved / SS
+    mov ds,[__TSS_TASK_03_LIN+21*04] ;reserved / DS
+    mov fs,[__TSS_TASK_03_LIN+22*04] ;reserved / FS
+    mov gs,[__TSS_TASK_03_LIN+23*04] ;reserved / GS
+
+    ;Registros del Stack
+    mov eax,[__TSS_TASK_03_LIN+8*04] ;EIP
+    mov [esp+4*0],eax
+    mov eax,[__TSS_TASK_03_LIN+19*04] ;CS
+    mov [esp+4*1],eax
+    mov ax,[__TSS_TASK_03_LIN+9*04] ;EFLAGS
+    or eax, 0x0202                   ;Enable int
+    mov [esp+4*2],eax
+
+    ;Registros de Proposito general
+    mov eax,[__TSS_TASK_03_LIN+10*04]    
+    mov ebx,[__TSS_TASK_03_LIN+11*04]
+    mov ecx,[__TSS_TASK_03_LIN+12*04]
+    mov edx,[__TSS_TASK_03_LIN+13*04]
+    mov esi,[__TSS_TASK_03_LIN+16*04]
+    mov edi,[__TSS_TASK_03_LIN+17*04]
+
+jmp return_cargar_contexto_tarea_3
 
 cargar_contexto_tarea_4:
     mov ebp,[__TSS_TASK_04_LIN+15*04] 

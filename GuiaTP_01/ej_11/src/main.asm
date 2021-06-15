@@ -29,6 +29,7 @@ EXTERN __VIDEO_VGA_LIN
 EXTERN __screen_buffer_init
 EXTERN task01_main
 EXTERN task02_main
+EXTERN task03_main
 EXTERN __tiempo_iniciar
 EXTERN __DATOS_TIMER_VMA_LIN
 EXTERN __DATOS_SCH_VMA_LIN
@@ -105,43 +106,22 @@ kernel32_init:
     mov byte[TareaActual],1
 
 
-    push __DATOS_SCH_VMA_LIN
-    push __DIGITOS_VMA_LIN
-    call task01_main
-    add esp,8        
+;    push __DATOS_SCH_VMA_LIN
+;    push __DIGITOS_VMA_LIN
+;    call task01_main
+;    add esp,8        
     
     mov ebp,esp
     mov esp,__TASK_01_STACK_END_LIN
     mov ebp,esp
 
     sti
-        
+    jmp ciclo1
 
-    ciclo1:
-        ;CR3 C000
-        ;Llama la tarea 1 
-        push __DATOS_SCH_VMA_LIN
-        push __DIGITOS_VMA_LIN
-        call task01_main
-        add esp,8        
-        mov ebp,esp
-        hlt
-        jmp ciclo1
+    idle_kernel:
+    jmp idle_kernel
+    
 
-    ciclo2:
-        ;CR3 D000
-        ;Llama la tarea 2 
-        push __DATOS_SCH_VMA_LIN
-        push __DIGITOS_VMA_LIN
-        call task02_main
-        add esp,8        
-        mov ebp,esp
-        jmp ciclo2
-
-    ciclo4:
-        ;CR3 F000
-        call my_task_04
-        jmp ciclo4
 
 ;------------------------------------------------------------------------------------------------------------
 ;		__TSS_INIT
@@ -167,7 +147,7 @@ __TSS_INIT:
 
     mov dword[__TSS_TASK_02_LIN + 1*04],__STACK_END_32               ;ESP0    
     mov word [__TSS_TASK_02_LIN + 2*04],DS_SEL_32                    ;SS0
-    mov eax,__PAGE_TABLES_VMA_TASK01_LIN     
+    mov eax,__PAGE_TABLES_VMA_TASK02_LIN     
     mov [__TSS_TASK_02_LIN + 7*04],eax                               ;CR3
     mov eax,ciclo2   
     mov [__TSS_TASK_02_LIN + 8*04],eax                               ;EIP
@@ -178,6 +158,20 @@ __TSS_INIT:
     mov word [__TSS_TASK_02_LIN + 21*04],DS_SEL_32                   ;DS
     mov word [__TSS_TASK_02_LIN + 22*04],DS_SEL_32                   ;FS
     mov word [__TSS_TASK_02_LIN + 23*04],DS_SEL_32                   ;GS    
+
+    mov dword[__TSS_TASK_03_LIN + 1*04],__STACK_END_32               ;ESP0    
+    mov word [__TSS_TASK_03_LIN + 2*04],DS_SEL_32                    ;SS0
+    mov eax,__PAGE_TABLES_VMA_TASK01_LIN     
+    mov [__TSS_TASK_03_LIN + 7*04],eax                               ;CR3
+    mov eax,ciclo3   
+    mov [__TSS_TASK_03_LIN + 8*04],eax                               ;EIP
+    mov dword[__TSS_TASK_03_LIN + 14*04],__TASK_03_STACK_END_LIN     ;ESP
+    mov word [__TSS_TASK_03_LIN + 18*04],DS_SEL_32                   ;ES
+    mov word [__TSS_TASK_03_LIN + 19*04],CS_SEL_32                   ;CS
+    mov word [__TSS_TASK_03_LIN + 20*04],DS_SEL_32                   ;SS
+    mov word [__TSS_TASK_03_LIN + 21*04],DS_SEL_32                   ;DS
+    mov word [__TSS_TASK_03_LIN + 22*04],DS_SEL_32                   ;FS
+    mov word [__TSS_TASK_03_LIN + 23*04],DS_SEL_32                   ;GS    
 
     mov dword[__TSS_TASK_04_LIN + 1*04],__STACK_END_32               ;ESP0
     mov word [__TSS_TASK_04_LIN + 2*04],DS_SEL_32                    ;SS0
@@ -234,11 +228,14 @@ dd 0x00000000
 align 32
 
 
-GLOBAL ContadorTarea2,ContadorTarea1,TareaActual,TareaProxima
+GLOBAL ContadorTarea2,ContadorTarea1,ContadorTarea3,TareaActual,TareaProxima
 ContadorTarea1:
 db 0x00
 align 32
 ContadorTarea2:
+db 0x00
+align 32
+ContadorTarea3:
 db 0x00
 align 32
 TareaActual:
@@ -247,3 +244,40 @@ align 32
 TareaProxima:
 db 0x00
 align 32
+
+section .functions_task01
+ciclo1:
+    ;CR3 C000
+    ;Llama la tarea 1 
+    push __DIGITOS_VMA_LIN
+    call task01_main
+    add esp,4       
+    mov ebp,esp
+    hlt
+    jmp ciclo1
+
+section .functions_task02
+ciclo2:
+    ;CR3 D000
+    ;Llama la tarea 2 
+    push __DIGITOS_VMA_LIN
+    call task02_main
+    add esp,4        
+    mov ebp,esp
+    jmp ciclo2;
+
+section .functions_task03
+ciclo3:
+    ;CR3 E000
+    ;Llama la tarea 3
+    push __DIGITOS_VMA_LIN
+    call task03_main
+    add esp,4        
+    mov ebp,esp
+    jmp ciclo3
+
+section .functions_task04
+ciclo4:
+    ;CR3 F000
+    call my_task_04
+    jmp ciclo4

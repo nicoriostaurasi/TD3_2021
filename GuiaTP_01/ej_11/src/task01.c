@@ -21,9 +21,8 @@ __attribute__(( section(".data")))int dummy_task01;
  * @brief Funcion Principal
  * @return nada
  * @param tabla_digitos* td_p
- * @param sch_buffer* sc_p
  */
-__attribute__(( section(".functions_task01"))) void task01_main(tabla_digitos* td_p,sch_buffer* sc_p)
+__attribute__(( section(".functions_task01"))) void task01_main(tabla_digitos* td_p)
 {
     task_promedio(td_p);
     task_show_VGA(td_p);
@@ -191,7 +190,7 @@ __attribute__(( section(".functions_task01"))) void task_show_VGA(tabla_digitos*
     {
     aux=aux+7;
     }
-    __screen_buffer_printc(16+5+11-i,10,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
+    __screen_buffer_printc(16+5+15-i,10,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
     }
 
     aux=0;
@@ -204,7 +203,7 @@ __attribute__(( section(".functions_task01"))) void task_show_VGA(tabla_digitos*
     {
     aux=aux+7;
     }
-    __screen_buffer_printc(8+5+11-i,10,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
+    __screen_buffer_printc(8+5+15-i,10,(screen_buffer*) &__VIDEO_VGA_LIN,aux+48);
     }
 }
 
