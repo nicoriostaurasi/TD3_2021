@@ -23,6 +23,7 @@ EXTERN __TSS_TASK_01_LIN
 EXTERN __TSS_TASK_02_LIN
 EXTERN __TSS_TASK_03_LIN
 EXTERN __TSS_TASK_04_LIN
+EXTERN __TSS_SISTEMA_LIN
 
 ;cambio de contexto
 GLOBAL cargo_cr3_task01
@@ -57,6 +58,9 @@ EXTERN TareaActual,TareaProxima
 %define TC_T3 9
 
 scheduler_ASM:
+    cmp byte [TareaActual],255
+    je Recargar_Tarea_4
+
     inc byte [ContadorTarea1]       
     inc byte [ContadorTarea2]       
     inc byte [ContadorTarea3]
@@ -138,22 +142,18 @@ scheduler_ASM:
 
     Salvar_Tarea_1:
     call guardar_contexto_tarea_1
-    add esp,3*4
     jmp proxima_tarea
 
     Salvar_Tarea_2:
     call guardar_contexto_tarea_2
-    add esp,3*4
     jmp proxima_tarea
 
     Salvar_Tarea_3:
     call guardar_contexto_tarea_3
-    add esp,3*4
     jmp proxima_tarea
 
     Salvar_Tarea_4:
     call guardar_contexto_tarea_4
-    add esp,3*4
     jmp proxima_tarea
 
     proxima_tarea:
@@ -171,7 +171,7 @@ scheduler_ASM:
     call prender_todos_los_stacks
     mov eax,__PAGE_TABLES_VMA_TASK01_LIN
     mov cr3,eax
-    mov esp,[__TSS_TASK_01_LIN+14*04]
+    mov esp,[__TSS_TASK_01_LIN+1*04]
     jmp cargar_contexto_tarea_1
     return_cargar_contexto_tarea_1:
     mov byte [TareaActual],Tarea_1
@@ -189,7 +189,7 @@ scheduler_ASM:
     call prender_todos_los_stacks    
     mov eax,__PAGE_TABLES_VMA_TASK02_LIN
     mov cr3,eax
-    mov esp,[__TSS_TASK_02_LIN+14*04]
+    mov esp,[__TSS_TASK_02_LIN+1*04]
     jmp cargar_contexto_tarea_2
     return_cargar_contexto_tarea_2:
     mov byte [TareaActual],Tarea_2
@@ -205,7 +205,7 @@ scheduler_ASM:
     call prender_todos_los_stacks    
     mov eax,__PAGE_TABLES_VMA_TASK03_LIN
     mov cr3,eax
-    mov esp,[__TSS_TASK_03_LIN+14*04]
+    mov esp,[__TSS_TASK_03_LIN+1*04]
     jmp cargar_contexto_tarea_3
     return_cargar_contexto_tarea_3:
     mov byte [TareaActual],Tarea_3
@@ -217,13 +217,20 @@ scheduler_ASM:
     call cargo_cr3_task03 
     jmp fin
 
+EXTERN __STACK_END_32_T1
+EXTERN __STACK_END_32_T2
+EXTERN __STACK_END_32_T3
+EXTERN __STACK_END_32_T4
+
+
     Recargar_Tarea_4:
     call prender_todos_los_stacks
     mov eax,__PAGE_TABLES_VMA_TASK04_LIN
     mov cr3,eax
-    mov esp,[__TSS_TASK_04_LIN+14*04]
+    mov esp,[__TSS_TASK_04_LIN+1*04]
     jmp cargar_contexto_tarea_4
     return_cargar_contexto_tarea_4:
+
     mov byte [TareaActual],Tarea_4
     call cargo_cr3_kernel
     call prendo_contexto_tarea04
@@ -241,8 +248,6 @@ jmp return_scheduler_ASM
 
 
 guardar_contexto_tarea_1:
-  xchg bx,bx
-  ;Registros de Propósito General
   mov [__TSS_TASK_01_LIN+10*04],eax ;EAX
   mov [__TSS_TASK_01_LIN+11*04],ecx ;ECX
   mov [__TSS_TASK_01_LIN+12*04],edx ;EDX
@@ -250,28 +255,16 @@ guardar_contexto_tarea_1:
   mov [__TSS_TASK_01_LIN+16*04],esi ;ESI
   mov [__TSS_TASK_01_LIN+17*04],edi ;EDI
 
-  ;Registros del Stack
-  mov eax,[esp+04*1]   ;EIP
-  mov [__TSS_TASK_01_LIN+8*04],eax  ;EIP del stack
-  mov eax,[esp+04*2]   ;CS
-  mov [__TSS_TASK_01_LIN+19*04],eax ;reserved / CS del stack
-  mov ax,[esp+04*3]  ;EFLAGS
-  mov [__TSS_TASK_01_LIN+9*04],ax  ;EFLAGS del stack
-  ;El eflags no es 32b
 
   ;Registros de Segmento
   mov [__TSS_TASK_01_LIN+18*04],es ;reserved / ES    
-  mov [__TSS_TASK_01_LIN+20*04],ss ;reserved / SS
   mov [__TSS_TASK_01_LIN+21*04],ds ;reserved / DS   
   mov [__TSS_TASK_01_LIN+22*04],fs ;reserved / FS       
   mov [__TSS_TASK_01_LIN+23*04],gs ;reserved / GS   
-
   mov [__TSS_TASK_01_LIN+15*04],ebp ;EBP
-
   mov ebp,esp
-  add ebp,4*4
-  mov [__TSS_TASK_01_LIN+14*04],ebp ;ESP
-
+  add ebp,4
+  mov [__TSS_TASK_01_LIN+1*04],ebp ;ESP
 ret
 ;jmp return_guardar_contexto_tarea_1
 
@@ -284,30 +277,21 @@ guardar_contexto_tarea_2:
   mov [__TSS_TASK_02_LIN+16*04],esi ;ESI
   mov [__TSS_TASK_02_LIN+17*04],edi ;EDI
 
-  ;Registros del Stack
-  mov eax,[esp+04*1]   ;EIP
-  mov [__TSS_TASK_02_LIN+8*04],eax  ;EIP del stack
-  mov eax,[esp+04*2]   ;CS
-  mov [__TSS_TASK_02_LIN+19*04],eax ;reserved / CS del stack
-  mov ax,[esp+04*3]  ;EFLAGS
-  mov [__TSS_TASK_02_LIN+9*04],ax  ;EFLAGS del stack
-  ;El eflags no es 32b
 
   ;Registros de Segmento
   mov [__TSS_TASK_02_LIN+18*04],es ;reserved / ES    
-  mov [__TSS_TASK_02_LIN+20*04],ss ;reserved / SS
   mov [__TSS_TASK_02_LIN+21*04],ds ;reserved / DS   
   mov [__TSS_TASK_02_LIN+22*04],fs ;reserved / FS       
   mov [__TSS_TASK_02_LIN+23*04],gs ;reserved / GS   
-
   mov [__TSS_TASK_02_LIN+15*04],ebp ;EBP
   mov ebp,esp
-  add ebp,4*4
-  mov [__TSS_TASK_02_LIN+14*04],ebp ;ESP
+  add ebp,4
+  mov [__TSS_TASK_02_LIN+1*04],ebp ;ESP
 ret
 ;jmp return_guardar_contexto_tarea_2
 
 guardar_contexto_tarea_3:
+
   mov [__TSS_TASK_03_LIN+10*04],eax ;EAX
   mov [__TSS_TASK_03_LIN+11*04],ecx ;ECX
   mov [__TSS_TASK_03_LIN+12*04],edx ;EDX
@@ -315,30 +299,21 @@ guardar_contexto_tarea_3:
   mov [__TSS_TASK_03_LIN+16*04],esi ;ESI
   mov [__TSS_TASK_03_LIN+17*04],edi ;EDI
 
-  ;Registros del Stack
-  mov eax,[esp+04*1]   ;EIP
-  mov [__TSS_TASK_03_LIN+8*04],eax  ;EIP del stack
-  mov eax,[esp+04*2]   ;CS
-  mov [__TSS_TASK_03_LIN+19*04],eax ;reserved / CS del stack
-  mov ax,[esp+04*3]  ;EFLAGS
-  mov [__TSS_TASK_03_LIN+9*04],ax  ;EFLAGS del stack
-  ;El eflags no es 32b
 
   ;Registros de Segmento
   mov [__TSS_TASK_03_LIN+18*04],es ;reserved / ES    
-  mov [__TSS_TASK_03_LIN+20*04],ss ;reserved / SS
   mov [__TSS_TASK_03_LIN+21*04],ds ;reserved / DS   
   mov [__TSS_TASK_03_LIN+22*04],fs ;reserved / FS       
   mov [__TSS_TASK_03_LIN+23*04],gs ;reserved / GS   
-
   mov [__TSS_TASK_03_LIN+15*04],ebp ;EBP
   mov ebp,esp
-  add ebp,4*4
-  mov [__TSS_TASK_03_LIN+14*04],ebp ;ESP
+  add ebp,4
+  mov [__TSS_TASK_03_LIN+1*04],ebp ;ESP
 ret
 
 
 guardar_contexto_tarea_4:
+;  xchg bx,bx
   mov [__TSS_TASK_04_LIN+10*04],eax ;EAX
   mov [__TSS_TASK_04_LIN+11*04],ecx ;ECX
   mov [__TSS_TASK_04_LIN+12*04],edx ;EDX
@@ -346,25 +321,48 @@ guardar_contexto_tarea_4:
   mov [__TSS_TASK_04_LIN+16*04],esi ;ESI
   mov [__TSS_TASK_04_LIN+17*04],edi ;EDI
 
-  ;Registros del Stack
-  mov eax,[esp+04*1]   ;EIP
-  mov [__TSS_TASK_04_LIN+8*04],eax  ;EIP del stack
-  mov eax,[esp+04*2]   ;CS
-  mov [__TSS_TASK_04_LIN+19*04],eax ;reserved / CS del stack
-  mov ax,[esp+04*3]  ;EFLAGS
-  mov [__TSS_TASK_04_LIN+9*04],ax  ;EFLAGS del stack
-  ;El eflags no es 32b
+  ;Registros del Stack - Sup a Sup
+;  mov eax,[esp+04*1]   ;EIP
+;;  xchg bx,bx
+;  mov [__TSS_TASK_04_LIN+8*04],eax  ;EIP del stack
+;  mov ax,[esp+04*3]  ;EFLAGS
+;  mov [__TSS_TASK_04_LIN+9*04],ax  ;EFLAGS del stack
+;  ;El eflags no es 32b
+;  mov eax,[esp+04*2]   ;CS
+;;  mov [__TSS_TASK_04_LIN+19*04],eax ;reserved / CS del stack
+;  and eax,0x03
+;  cmp eax,0  ;Pregunto si el RPL es SUP
+;  je k2k_s_t4
+;  cmp eax,3  ;Pregunto si el RPL es US
+;  je k2u_s_t4
+;
+;  k2k_s_t4:
+;  mov eax,CS_SEL_32
+;  mov [__TSS_TASK_04_LIN+19*04],eax ;CS
+;  jmp guardado_stack_frame_s_t4
+;  k2u_s_t4:
+;  mov eax,CS_SEL_32_US            
+;  mov [__TSS_TASK_04_LIN+19*04],eax ;CS
+;;  xchg bx,bx
+;  mov eax,[esp+04*4]   ;ESP3
+;  
+;  mov [__TSS_TASK_04_LIN+14*04],eax 
+;  mov eax,[esp+04*5]   ;SS3    
+;  mov [__TSS_TASK_04_LIN+20*04],eax ;reserved / SS
+;  jmp guardado_stack_frame_s_t4
+
+  guardado_stack_frame_s_t4:
 
   ;Registros de Segmento
   mov [__TSS_TASK_04_LIN+18*04],es ;reserved / ES    
-  mov [__TSS_TASK_04_LIN+20*04],ss ;reserved / SS
+;  mov [__TSS_TASK_04_LIN+20*04],ss ;reserved / SS
   mov [__TSS_TASK_04_LIN+21*04],ds ;reserved / DS   
   mov [__TSS_TASK_04_LIN+22*04],fs ;reserved / FS       
   mov [__TSS_TASK_04_LIN+23*04],gs ;reserved / GS   
   mov [__TSS_TASK_04_LIN+15*04],ebp ;EBP
   mov ebp,esp
-  add ebp,4*4
-  mov [__TSS_TASK_04_LIN+14*04],ebp ;ESP
+  add ebp,4
+  mov [__TSS_TASK_04_LIN+1*04],ebp ;ESP
 ret
 ;jmp return_guardar_contexto_tarea_4
 
@@ -372,28 +370,40 @@ ret
 cargar_contexto_tarea_1:
     mov ebp,[__TSS_TASK_01_LIN+15*04] 
 
-    call cargo_cr3_task01
+    mov eax, cr0
+    xor  eax, X86_CR0_PG
+    mov cr0, eax
 
-    ;levanto TSS
-    push eax ;libero 3 posiciones para poder ingresar lo que recupero de la tabla
-    push eax
-    push eax
+    call cargo_cr3_task01
+    
+    mov eax, cr0
+    xor  eax, X86_CR0_PG
+    mov cr0, eax
 
     ;Cargo los registros de segmento
     mov es,[__TSS_TASK_01_LIN+18*04] ;reserved / ES
-    mov ss,[__TSS_TASK_01_LIN+20*04] ;reserved / SS
+    mov ss,[__TSS_TASK_01_LIN+2*04] ;reserved / SS0
     mov ds,[__TSS_TASK_01_LIN+21*04] ;reserved / DS
     mov fs,[__TSS_TASK_01_LIN+22*04] ;reserved / FS
     mov gs,[__TSS_TASK_01_LIN+23*04] ;reserved / GS
 
-    ;Registros del Stack
-    mov eax,[__TSS_TASK_01_LIN+8*04] ;EIP
-    mov [esp+4*0],eax
-    mov eax,[__TSS_TASK_01_LIN+19*04] ;CS
-    mov [esp+4*1],eax
-    mov ax,[__TSS_TASK_01_LIN+9*04] ;EFLAGS
-    or eax, 0x0202                   ;Enable int
-    mov [esp+4*2],eax
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
+
+    ;TSS de sistema
+    mov dword eax,__STACK_END_32_T1   ;ESP0
+    mov dword[__TSS_SISTEMA_LIN+1*04],eax       
+    mov dword eax,[__TSS_TASK_01_LIN + 2*04]   ;SS0
+    mov dword[__TSS_SISTEMA_LIN+2*04],eax
+    mov dword eax,[__TSS_TASK_01_LIN + 7*04]    ;CR3
+    mov dword [__TSS_SISTEMA_LIN + 7*04],eax       
+    mov dword eax,[__TSS_TASK_01_LIN + 14*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+14*04],eax       
+    mov word ax,[__TSS_TASK_01_LIN + 19*04]  ;CS
+    mov word[__TSS_SISTEMA_LIN+19*04],ax       
+    mov dword eax,[__TSS_TASK_01_LIN + 20*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+20*04],eax       
 
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_01_LIN+10*04]    
@@ -402,43 +412,46 @@ cargar_contexto_tarea_1:
     mov edx,[__TSS_TASK_01_LIN+13*04]
     mov esi,[__TSS_TASK_01_LIN+16*04]
     mov edi,[__TSS_TASK_01_LIN+17*04]
+
 jmp return_cargar_contexto_tarea_1
 
 cargar_contexto_tarea_2:
     mov ebp,[__TSS_TASK_02_LIN+15*04] 
 
-;Aca apago los stacks de las otras tareas, y paginas de otras tareas y cargo mis paginas
     mov eax, cr0
     xor  eax, X86_CR0_PG
     mov cr0, eax
 
-    ;levanto TSS
     call cargo_cr3_task02
-
     
     mov eax, cr0
     xor  eax, X86_CR0_PG
     mov cr0, eax
-    
-    push eax
-    push eax
-    push eax
 
     ;Cargo los registros de segmento
     mov es,[__TSS_TASK_02_LIN+18*04] ;reserved / ES
-    mov ss,[__TSS_TASK_02_LIN+20*04] ;reserved / SS
+    mov ss,[__TSS_TASK_02_LIN+2*04] ;reserved / SS0
     mov ds,[__TSS_TASK_02_LIN+21*04] ;reserved / DS
     mov fs,[__TSS_TASK_02_LIN+22*04] ;reserved / FS
     mov gs,[__TSS_TASK_02_LIN+23*04] ;reserved / GS
 
-    ;Registros del Stack
-    mov eax,[__TSS_TASK_02_LIN+8*04] ;EIP
-    mov [esp+4*0],eax
-    mov eax,[__TSS_TASK_02_LIN+19*04] ;CS
-    mov [esp+4*1],eax
-    mov ax,[__TSS_TASK_02_LIN+9*04] ;EFLAGS
-    or eax, 0x0202                   ;Enable int
-    mov [esp+4*2],eax
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
+
+    ;TSS de sistema
+    mov dword eax,__STACK_END_32_T2   ;ESP0
+    mov dword[__TSS_SISTEMA_LIN+1*04],eax       
+    mov dword eax,[__TSS_TASK_02_LIN + 2*04]   ;SS0
+    mov dword[__TSS_SISTEMA_LIN+2*04],eax
+    mov dword eax,[__TSS_TASK_02_LIN + 7*04]    ;CR3
+    mov dword [__TSS_SISTEMA_LIN + 7*04],eax       
+    mov dword eax,[__TSS_TASK_02_LIN + 14*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+14*04],eax       
+    mov word ax,[__TSS_TASK_02_LIN + 19*04]  ;CS
+    mov word[__TSS_SISTEMA_LIN+19*04],ax       
+    mov dword eax,[__TSS_TASK_02_LIN + 20*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+20*04],eax       
 
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_02_LIN+10*04]    
@@ -451,40 +464,43 @@ cargar_contexto_tarea_2:
 jmp return_cargar_contexto_tarea_2
 
 cargar_contexto_tarea_3:
+
     mov ebp,[__TSS_TASK_03_LIN+15*04] 
 
-;Aca apago los stacks de las otras tareas, y paginas de otras tareas y cargo mis paginas
     mov eax, cr0
     xor  eax, X86_CR0_PG
     mov cr0, eax
 
-    ;levanto TSS
     call cargo_cr3_task03
-
     
     mov eax, cr0
     xor  eax, X86_CR0_PG
     mov cr0, eax
-    
-    push eax
-    push eax
-    push eax
 
     ;Cargo los registros de segmento
     mov es,[__TSS_TASK_03_LIN+18*04] ;reserved / ES
-    mov ss,[__TSS_TASK_03_LIN+20*04] ;reserved / SS
+    mov ss,[__TSS_TASK_03_LIN+2*04] ;reserved / SS0
     mov ds,[__TSS_TASK_03_LIN+21*04] ;reserved / DS
     mov fs,[__TSS_TASK_03_LIN+22*04] ;reserved / FS
     mov gs,[__TSS_TASK_03_LIN+23*04] ;reserved / GS
 
-    ;Registros del Stack
-    mov eax,[__TSS_TASK_03_LIN+8*04] ;EIP
-    mov [esp+4*0],eax
-    mov eax,[__TSS_TASK_03_LIN+19*04] ;CS
-    mov [esp+4*1],eax
-    mov ax,[__TSS_TASK_03_LIN+9*04] ;EFLAGS
-    or eax, 0x0202                   ;Enable int
-    mov [esp+4*2],eax
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
+
+    ;TSS de sistema
+    mov dword eax,__STACK_END_32_T3   ;ESP0
+    mov dword[__TSS_SISTEMA_LIN+1*04],eax       
+    mov dword eax,[__TSS_TASK_03_LIN + 2*04]   ;SS0
+    mov dword[__TSS_SISTEMA_LIN+2*04],eax
+    mov dword eax,[__TSS_TASK_03_LIN + 7*04]    ;CR3
+    mov dword [__TSS_SISTEMA_LIN + 7*04],eax       
+    mov dword eax,[__TSS_TASK_03_LIN + 14*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+14*04],eax       
+    mov word ax,[__TSS_TASK_03_LIN + 19*04]  ;CS
+    mov word[__TSS_SISTEMA_LIN+19*04],ax       
+    mov dword eax,[__TSS_TASK_03_LIN + 20*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+20*04],eax       
 
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_03_LIN+10*04]    
@@ -497,6 +513,7 @@ cargar_contexto_tarea_3:
 jmp return_cargar_contexto_tarea_3
 
 cargar_contexto_tarea_4:
+
     mov ebp,[__TSS_TASK_04_LIN+15*04] 
 
     mov eax, cr0
@@ -509,25 +526,58 @@ cargar_contexto_tarea_4:
     xor  eax, X86_CR0_PG
     mov cr0, eax
 
-    push eax
-    push eax
-    push eax
-
     ;Cargo los registros de segmento
     mov es,[__TSS_TASK_04_LIN+18*04] ;reserved / ES
-    mov ss,[__TSS_TASK_04_LIN+20*04] ;reserved / SS
+    mov ss,[__TSS_TASK_04_LIN+2*04] ;reserved / SS0
     mov ds,[__TSS_TASK_04_LIN+21*04] ;reserved / DS
     mov fs,[__TSS_TASK_04_LIN+22*04] ;reserved / FS
     mov gs,[__TSS_TASK_04_LIN+23*04] ;reserved / GS
 
+
     ;Registros del Stack
-    mov eax,[__TSS_TASK_04_LIN+8*04] ;EIP
-    mov [esp+4*0],eax
-    mov eax,[__TSS_TASK_04_LIN+19*04] ;CS
-    mov [esp+4*1],eax
-    mov ax,[__TSS_TASK_04_LIN+9*04] ;EFLAGS
-    or eax, 0x0202                   ;Enable int
-    mov [esp+4*2],eax
+;    EXTERN CS_SEL_32_US
+ ;   xchg bx,bx
+;    mov eax,[__TSS_TASK_04_LIN+8*04]     ;EIP
+;    mov [esp+4*0],eax
+    
+;    mov ax,[__TSS_TASK_04_LIN+9*04]      ;EFLAGS
+;    or eax, 0x0202                       ;Enable int
+;    mov [esp+4*2],eax
+; 
+;    mov eax,[__TSS_TASK_04_LIN+19*04]    ;CS
+;    cmp eax,CS_SEL_32
+;    je k2k_l_t4
+;    add eax,3
+;    mov [esp+4*1],eax
+;    mov eax,[__TSS_TASK_04_LIN+14*04]    ;ESP3
+;    mov [esp+4*3],eax
+;    mov eax,[__TSS_TASK_04_LIN+20*04]    ;SS3
+;    mov [esp+4*4],eax
+;    jmp cargado_stack_l_t4
+;
+;    k2k_l_t4:    
+;    mov [esp+4*1],eax
+;    xchg bx,bx
+
+    cargado_stack_l_t4:
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
+
+    ;TSS de sistema
+    mov dword eax,__STACK_END_32_T4   ;ESP0
+    mov dword[__TSS_SISTEMA_LIN+1*04],eax       
+    mov dword eax,[__TSS_TASK_04_LIN + 2*04]   ;SS0
+    mov dword[__TSS_SISTEMA_LIN+2*04],eax
+    mov dword eax,[__TSS_TASK_04_LIN + 7*04]    ;CR3
+    mov dword [__TSS_SISTEMA_LIN + 7*04],eax       
+    mov dword eax,[__TSS_TASK_04_LIN + 14*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+14*04],eax       
+    mov word ax,[__TSS_TASK_04_LIN + 19*04]  ;CS
+    mov word[__TSS_SISTEMA_LIN+19*04],ax       
+    mov dword eax,[__TSS_TASK_04_LIN + 20*04]  ;SS0
+    mov dword[__TSS_SISTEMA_LIN+20*04],eax       
+
 
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_04_LIN+10*04]    
@@ -536,7 +586,7 @@ cargar_contexto_tarea_4:
     mov edx,[__TSS_TASK_04_LIN+13*04]
     mov esi,[__TSS_TASK_04_LIN+16*04]
     mov edi,[__TSS_TASK_04_LIN+17*04]
-
+;    xchg bx,bx
 jmp return_cargar_contexto_tarea_4
 
 
@@ -579,6 +629,11 @@ EXTERN __PT_TASK_01_STACK
 EXTERN __PT_TASK_02_STACK
 EXTERN __PT_TASK_03_STACK
 EXTERN __PT_TASK_04_STACK
+
+EXTERN __PT_STACK_SISTEMA_T1
+EXTERN __PT_STACK_SISTEMA_T2
+EXTERN __PT_STACK_SISTEMA_T3
+EXTERN __PT_STACK_SISTEMA_T4
 
 EXTERN CS_SEL_32
 
@@ -655,10 +710,11 @@ PAG_G_YES   equ 0       ; Global
 PAG_A       equ 0       ; accedida
 PAG_PS_4K   equ 0       ; tamaño de pagina de 4KB
 
+
 apago_contexto_tarea01:
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -673,7 +729,7 @@ apago_contexto_tarea01:
 
   push PAG_P_NO
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -688,7 +744,7 @@ apago_contexto_tarea01:
 
   push PAG_P_NO
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -703,7 +759,7 @@ apago_contexto_tarea01:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -718,7 +774,7 @@ apago_contexto_tarea01:
 
   push PAG_P_NO
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -731,12 +787,27 @@ apago_contexto_tarea01:
   call __carga_TP 
   add esp,48
 
+  push PAG_P_NO
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T1)
+  push 0x3F4
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
+  call __carga_TP 
+  add esp,48
+
 ret
 
 apago_contexto_tarea02:
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -751,7 +822,7 @@ apago_contexto_tarea02:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -766,7 +837,7 @@ apago_contexto_tarea02:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -781,7 +852,7 @@ apago_contexto_tarea02:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -796,7 +867,7 @@ apago_contexto_tarea02:
 
   push PAG_P_NO
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -808,12 +879,27 @@ apago_contexto_tarea02:
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
   call __carga_TP 
   add esp,48
+
+  push PAG_P_NO
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T2)
+  push 0x3F5
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
+  call __carga_TP 
+  add esp,48
 ret
 
 apago_contexto_tarea03:
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -828,7 +914,7 @@ apago_contexto_tarea03:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -843,7 +929,7 @@ apago_contexto_tarea03:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -858,7 +944,7 @@ apago_contexto_tarea03:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -873,7 +959,7 @@ apago_contexto_tarea03:
 
   push PAG_P_NO
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -885,12 +971,28 @@ apago_contexto_tarea03:
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
   call __carga_TP 
   add esp,48
+
+  push PAG_P_NO
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T3)
+  push 0x3F6
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
+  call __carga_TP 
+  add esp,48
+
 ret
 
 apago_contexto_tarea04:
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -905,7 +1007,7 @@ apago_contexto_tarea04:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -920,7 +1022,7 @@ apago_contexto_tarea04:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -935,7 +1037,7 @@ apago_contexto_tarea04:
 
   push PAG_P_NO
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -950,7 +1052,7 @@ apago_contexto_tarea04:
 
   push PAG_P_NO
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -962,6 +1064,22 @@ apago_contexto_tarea04:
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
   call __carga_TP 
   add esp,48
+
+  push PAG_P_NO
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T4)
+  push 0x3F7
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
+  call __carga_TP 
+  add esp,48
+
 ret
 
 ;pila y codigo
@@ -976,7 +1094,7 @@ prendo_contexto_tarea01:
   
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -991,7 +1109,7 @@ prendo_contexto_tarea01:
 
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1006,7 +1124,7 @@ prendo_contexto_tarea01:
 
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1021,7 +1139,7 @@ prendo_contexto_tarea01:
 
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1062,7 +1180,7 @@ prendo_contexto_tarea02:
 
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1076,8 +1194,8 @@ prendo_contexto_tarea02:
   add esp,48
 
   push PAG_P_YES
-  push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_RW_W
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1091,8 +1209,8 @@ prendo_contexto_tarea02:
   add esp,48
 
   push PAG_P_YES
-  push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_RW_W
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1107,7 +1225,7 @@ prendo_contexto_tarea02:
 
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1147,7 +1265,7 @@ prendo_contexto_tarea03:
   
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1161,8 +1279,8 @@ prendo_contexto_tarea03:
   add esp,48
 
   push PAG_P_YES
-  push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_RW_W
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1176,8 +1294,8 @@ prendo_contexto_tarea03:
   add esp,48
 
   push PAG_P_YES
-  push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_RW_W
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1192,7 +1310,7 @@ prendo_contexto_tarea03:
 
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1232,7 +1350,7 @@ prendo_contexto_tarea04:
   
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1246,8 +1364,8 @@ prendo_contexto_tarea04:
   add esp,48
 
   push PAG_P_YES
-  push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_RW_W
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1261,8 +1379,8 @@ prendo_contexto_tarea04:
   add esp,48
 
   push PAG_P_YES
-  push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_RW_W
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1277,7 +1395,7 @@ prendo_contexto_tarea04:
 
   push PAG_P_YES
   push PAG_RW_R
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1292,7 +1410,7 @@ prendo_contexto_tarea04:
 
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1302,7 +1420,7 @@ prendo_contexto_tarea04:
   push dword(__PT_TASK_04_STACK)
   push 0x392
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
-  call __carga_TP 
+  ;call __carga_TP 
   add esp,48
 ret
 
@@ -1310,7 +1428,7 @@ prender_todos_los_stacks:
   
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1325,7 +1443,7 @@ prender_todos_los_stacks:
 
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1340,7 +1458,7 @@ prender_todos_los_stacks:
 
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1355,7 +1473,7 @@ prender_todos_los_stacks:
 
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_SUP
+  push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1365,6 +1483,66 @@ prender_todos_los_stacks:
   push dword(__PT_TASK_04_STACK)
   push 0x392
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x01))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T1)
+  push 0x3F4
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T2)
+  push 0x3F5
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T3)
+  push 0x3F6
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
+  call __carga_TP 
+  add esp,48
+
+  push PAG_P_YES
+  push PAG_RW_W
+  push PAG_US_SUP 
+  push PAG_PWT_NO
+  push PAG_PCD_NO
+  push PAG_A
+  push PAG_D
+  push PAG_PAT
+  push PAG_G_YES
+  push dword(__PT_STACK_SISTEMA_T4)
+  push 0x3F7
+  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x7F))
   call __carga_TP 
   add esp,48
 

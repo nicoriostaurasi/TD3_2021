@@ -22,9 +22,9 @@
 
 - [x] Ejercicio 11 - 13/06/21
 
-- [ ] Ejercicio 12
+- [x] Ejercicio 12 - 16/06/21
 
-- [ ] Ejercicio 13
+- [x] Ejercicio 13 - 21/06/21
 
 ## Acceso rapido de la carpeta
 
@@ -47,3 +47,7 @@
 * [Ejercicio 10 - Paginación Real](/GuiaTP_01/ej_10/)
 
 * [Ejercicio 11 - Conmutación de Tareas](/GuiaTP_01/ej_11/)
+
+* [Ejercicio 12 - SIMD](/GuiaTP_01/ej_12/)
+
+* [Ejercicio 13 - Niveles de Privilegio](/GuiaTP_01/ej_13/)

@@ -241,7 +241,6 @@ jmp return_scheduler_ASM
 
 
 guardar_contexto_tarea_1:
-  xchg bx,bx
   ;Registros de Propósito General
   mov [__TSS_TASK_01_LIN+10*04],eax ;EAX
   mov [__TSS_TASK_01_LIN+11*04],ecx ;ECX
@@ -395,6 +394,10 @@ cargar_contexto_tarea_1:
     or eax, 0x0202                   ;Enable int
     mov [esp+4*2],eax
 
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
+
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_01_LIN+10*04]    
     mov ebx,[__TSS_TASK_01_LIN+11*04]
@@ -439,6 +442,10 @@ cargar_contexto_tarea_2:
     mov ax,[__TSS_TASK_02_LIN+9*04] ;EFLAGS
     or eax, 0x0202                   ;Enable int
     mov [esp+4*2],eax
+
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
 
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_02_LIN+10*04]    
@@ -486,6 +493,10 @@ cargar_contexto_tarea_3:
     or eax, 0x0202                   ;Enable int
     mov [esp+4*2],eax
 
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
+
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_03_LIN+10*04]    
     mov ebx,[__TSS_TASK_03_LIN+11*04]
@@ -528,6 +539,10 @@ cargar_contexto_tarea_4:
     mov ax,[__TSS_TASK_04_LIN+9*04] ;EFLAGS
     or eax, 0x0202                   ;Enable int
     mov [esp+4*2],eax
+
+    mov eax, cr0
+    or  eax, X86_CR0_TS
+    mov cr0, eax
 
     ;Registros de Proposito general
     mov eax,[__TSS_TASK_04_LIN+10*04]    
