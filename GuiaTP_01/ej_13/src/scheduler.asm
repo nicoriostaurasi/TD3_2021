@@ -321,38 +321,6 @@ guardar_contexto_tarea_4:
   mov [__TSS_TASK_04_LIN+16*04],esi ;ESI
   mov [__TSS_TASK_04_LIN+17*04],edi ;EDI
 
-  ;Registros del Stack - Sup a Sup
-;  mov eax,[esp+04*1]   ;EIP
-;;  xchg bx,bx
-;  mov [__TSS_TASK_04_LIN+8*04],eax  ;EIP del stack
-;  mov ax,[esp+04*3]  ;EFLAGS
-;  mov [__TSS_TASK_04_LIN+9*04],ax  ;EFLAGS del stack
-;  ;El eflags no es 32b
-;  mov eax,[esp+04*2]   ;CS
-;;  mov [__TSS_TASK_04_LIN+19*04],eax ;reserved / CS del stack
-;  and eax,0x03
-;  cmp eax,0  ;Pregunto si el RPL es SUP
-;  je k2k_s_t4
-;  cmp eax,3  ;Pregunto si el RPL es US
-;  je k2u_s_t4
-;
-;  k2k_s_t4:
-;  mov eax,CS_SEL_32
-;  mov [__TSS_TASK_04_LIN+19*04],eax ;CS
-;  jmp guardado_stack_frame_s_t4
-;  k2u_s_t4:
-;  mov eax,CS_SEL_32_US            
-;  mov [__TSS_TASK_04_LIN+19*04],eax ;CS
-;;  xchg bx,bx
-;  mov eax,[esp+04*4]   ;ESP3
-;  
-;  mov [__TSS_TASK_04_LIN+14*04],eax 
-;  mov eax,[esp+04*5]   ;SS3    
-;  mov [__TSS_TASK_04_LIN+20*04],eax ;reserved / SS
-;  jmp guardado_stack_frame_s_t4
-
-  guardado_stack_frame_s_t4:
-
   ;Registros de Segmento
   mov [__TSS_TASK_04_LIN+18*04],es ;reserved / ES    
 ;  mov [__TSS_TASK_04_LIN+20*04],ss ;reserved / SS
@@ -637,6 +605,9 @@ EXTERN __PT_STACK_SISTEMA_T4
 
 EXTERN CS_SEL_32
 
+GLOBAL cargo_cr3_kernel
+GLOBAL cargo_cr3_task01
+
 cargo_cr3_kernel:
   xor eax,eax
   push __PAGE_TABLES_VMA_LIN
@@ -650,7 +621,7 @@ ret
 
 
 cargo_cr3_task01:
-  xor eax,eax
+  push eax
   push __PAGE_TABLES_VMA_TASK01_LIN
   push 0x18;
       ;PWT SI
@@ -658,6 +629,7 @@ cargo_cr3_task01:
   call __carga_CR3
   add esp,8
   mov cr3,eax
+  pop eax
 ret
 
 cargo_cr3_task02:
@@ -1093,7 +1065,7 @@ prendo_contexto_tarea01:
   add esp,16
   
   push PAG_P_YES
-  push PAG_RW_R
+  push PAG_RW_W
   push PAG_US_US
   push PAG_PWT_NO
   push PAG_PCD_NO
@@ -1222,6 +1194,21 @@ prendo_contexto_tarea02:
   push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
   call __carga_TP 
   add esp,48
+
+;  push PAG_P_YES
+;  push PAG_RW_W
+;  push PAG_US_US
+;  push PAG_PWT_NO
+;  push PAG_PCD_NO
+;  push PAG_A
+;  push PAG_D
+;  push PAG_PAT
+;  push PAG_G_YES
+;  push dword(__PT_TASK_02_DATA+0x1000)
+;  push 0x031
+;  push dword(__PAGE_TABLES_VMA_LIN+0x1000+(0x1000*0x05))
+;  call __carga_TP 
+;  add esp,48
 
   push PAG_P_YES
   push PAG_RW_R

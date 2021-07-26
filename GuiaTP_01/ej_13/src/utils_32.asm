@@ -734,7 +734,7 @@ PAG_A       equ 0       ; accedida
 PAG_PS_4K   equ 0       ; tamaño de pagina de 4KB
 
 cargo_TP_desde_codigo:
-
+  call __levanto_pagina
   ;------------------------
   ;(0x0) 0x0000-0000 a 0x003F-FFFF
   ;   *Sys_tables      0x0000-0000
@@ -855,7 +855,7 @@ cargo_TP_desde_codigo:
   ;-----------------------------------------------------------------
   push PAG_P_YES
   push PAG_RW_W
-  push PAG_US_US
+  push PAG_US_SUP
   push PAG_PWT_NO
   push PAG_PCD_NO
   push PAG_A
@@ -1033,7 +1033,6 @@ cargo_TP_desde_codigo:
   ;------------------------
 
   ;paginas 14-29 (ROM de 64KB)
-  call __levanto_pagina
   call __pagina_rom
 
 ret

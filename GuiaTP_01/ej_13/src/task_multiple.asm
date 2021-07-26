@@ -18,7 +18,8 @@ EXTERN TD3_Read
 EXTERN task01_main
 ciclo1:
     ;CR3 C000
-    ;Llama la tarea 1
+    ;Llama la tarea 1 
+;    xchg bx,bx
     push __DIGITOS_VMA_LIN
     call task01_main
     add esp,4       
@@ -46,6 +47,7 @@ task01_read_k:
 
 section .functions_task02
 GLOBAL task02_print_k
+GLOBAL task02_read_k
 GLOBAL ciclo2
 EXTERN task02_main
 ciclo2: 
@@ -70,10 +72,17 @@ task02_print_k:
     mov eax,TD3_Print
     int 0x80
     ret
+task02_read_k:
+    mov ebx,[esp+4*1]   ;direccion
+    mov ecx,[esp+4*2]   ;bytes
+    mov eax,TD3_Read
+    int 0x80
+    ret
 
 section .functions_task03
 GLOBAL ciclo3
 GLOBAL task03_print_k
+GLOBAL task03_read_k
 EXTERN task03_main
 EXTERN __DIGITOS_VMA_LIN
 ciclo3:
@@ -94,6 +103,12 @@ task03_print_k:
     mov ecx,[esp+4*2]   ;y
     mov edx,[esp+4*3]   ;caracter
     mov eax,TD3_Print
+    int 0x80
+    ret
+task03_read_k:
+    mov ebx,[esp+4*1]   ;direccion
+    mov ecx,[esp+4*2]   ;bytes
+    mov eax,TD3_Read
     int 0x80
     ret
 

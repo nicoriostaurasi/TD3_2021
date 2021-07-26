@@ -93,7 +93,7 @@ kernel32_init:
     ltr ax
 
     mov byte[TareaActual],255
-
+    mov byte[Tarea_FPU],255
     ;Descomentar para ver la generacion de faltas
     ;jmp pool_teclado
 
@@ -144,7 +144,7 @@ dd 0x00000000
 align 32
 
 
-GLOBAL ContadorTarea2,ContadorTarea1,ContadorTarea3,TareaActual,TareaProxima
+GLOBAL ContadorTarea2,ContadorTarea1,ContadorTarea3,TareaActual,TareaProxima,Tarea_FPU
 ContadorTarea1:
 db 0x00
 align 32
@@ -158,6 +158,9 @@ TareaActual:
 db 0x00
 align 32
 TareaProxima:
+db 0x00
+align 32
+Tarea_FPU:
 db 0x00
 align 32
 

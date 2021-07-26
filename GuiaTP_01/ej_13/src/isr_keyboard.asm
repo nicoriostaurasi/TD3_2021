@@ -21,6 +21,7 @@ EXTERN direccion_carga_local_main
 EXTERN cr2_ram_main
 
 EXTERN TareaActual
+EXTERN Tarea_FPU
 EXTERN __FPU_TASK_02_LIN
 EXTERN __FPU_TASK_03_LIN
 %define Tarea_1 1
@@ -196,26 +197,43 @@ ISR06_Handler_UD:
 ISR07_Handler_NM:
     mov dl,0x07
     clts        ;CLear Task Switch Flag in CR0
-    
-    cmp byte [TareaActual],Tarea_2
+
+    guardo_FPU:
+    cmp byte [Tarea_FPU],Tarea_2
     je Tarea2Uso
-    cmp byte [TareaActual],Tarea_3
+    cmp byte [Tarea_FPU],Tarea_3
     je Tarea3Uso
-    
-    jmp Fin_NM
+    jmp recupero_FPU
 
     Tarea2Uso:
-    fxsave  &__FPU_TASK_03_LIN
-    fxrstor &__FPU_TASK_02_LIN
-    jmp Fin_NM
+    fxsave  &__FPU_TASK_02_LIN
+    jmp recupero_FPU
 
     Tarea3Uso:
-    fxsave  &__FPU_TASK_02_LIN
+    fxsave  &__FPU_TASK_03_LIN
+    jmp recupero_FPU
+
+    recupero_FPU:
+    cmp byte [TareaActual],Tarea_2
+    je Tarea2Usara
+    cmp byte [TareaActual],Tarea_3
+    je Tarea3Usara
+    jmp fin_fpu
+
+    Tarea2Usara:    
+    fxrstor &__FPU_TASK_02_LIN
+    jmp fin_fpu
+
+    Tarea3Usara:    
     fxrstor &__FPU_TASK_03_LIN
-    jmp Fin_NM
+    jmp fin_fpu
 
-    Fin_NM:
-
+    fin_fpu:
+    push eax
+    xor eax,eax
+    mov eax,[TareaActual]
+    mov [Tarea_FPU],eax
+    pop eax
     iret
 
 ISR08_Handler_DF:
@@ -239,13 +257,13 @@ ISR13_Handler_GP:
     hlt
 
 ISR14_Handler_PF_Basico:
+;    xchg bx,bx
     mov dl,0x0E
-    hlt
+    hlt 
 
 ISR14_Handler_PF:
     cli                         ;deshabilito interrupciones para no romper todo               
     pusha
-
     mov eax, cr2                ;Almaceno CR2 como recomienda la PPT
     mov dword [cr2_ram_main], eax    
     mov eax, [esp+8*4]          ;pushee 8 registros el error code quedo defasado
@@ -277,7 +295,7 @@ PF_P:
     ;en eax tengo la direccion de carga de las TP
     push PAG_P_YES          
     push PAG_RW_W
-    push PAG_US_SUP
+    push PAG_US_US
     push PAG_PWT_NO
     push PAG_PCD_NO
     push PAG_A
@@ -305,7 +323,7 @@ PF_P:
     add eax, __PAGE_TABLES_VMA_LIN      ;le agrego el inicio de la DTP a eax
     push PAG_P_YES
     push PAG_RW_W
-    push PAG_US_SUP
+    push PAG_US_US
     push PAG_PWT_NO
     push PAG_PCD_NO
     push PAG_A
@@ -344,7 +362,6 @@ FIN_PF:
     out 0x20, al
     popa
     mov edx,0x0E
-
     pop eax
     sti
     iretd
@@ -377,8 +394,10 @@ IRQ00_Handler:
     ;EOI
     mov al, 0x20                        ;limpio la interrupcion del pic 
     out 0x20, al
+    cli
     jmp scheduler_ASM
 return_scheduler_ASM:
+    sti
     push __DATOS_TIMER_VMA_LIN
     call __Systick_Handler
     add esp,4
@@ -417,8 +436,8 @@ TD3_Print equ 82
 TD3_Read equ 83
 
 Syscall_Handler:
-    sti
 ;    xchg bx,bx
+    sti
     cmp eax,TD3_Halt
     je syscall_hlt
     cmp eax,TD3_Print
@@ -428,32 +447,40 @@ Syscall_Handler:
     jmp fin_syscall
 
     syscall_read:
+    EXTERN cargo_cr3_kernel
+    EXTERN cargo_cr3_task01
+    call cargo_cr3_kernel
     read_byte:
     cmp ecx,1
     jne read_word
     mov byte eax,[ebx]
+    call cargo_cr3_task01
     jmp fin_syscall
 
     read_word:
     cmp ecx,2
     jne read_dword
     mov word eax,[ebx]
+    call cargo_cr3_task01
     jmp fin_syscall
 
     read_dword:
     cmp ecx,3
     jne read_qword
     mov dword eax,[ebx]
+    call cargo_cr3_task01
     jmp fin_syscall
 
     read_qword:
     cmp ecx,4
     jne read_error
     mov qword eax,[ebx]
+    call cargo_cr3_task01
     jmp fin_syscall
 
     read_error:
     mov eax,-1
+    call cargo_cr3_task01
     jmp fin_syscall
 
     syscall_print:

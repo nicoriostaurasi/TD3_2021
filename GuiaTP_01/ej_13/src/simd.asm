@@ -20,9 +20,9 @@ GLOBAL suma_aritmetica_saturada
 ;realiza la suma aritmetica saturada en words
 ;paddusw
 suma_aritmetica_saturada:
-
+xor ecx,ecx
 mov eax,[esp+4]
-mov ebx,CANT_DIGITOS
+mov ebx,50
 add eax,16
 pxor mm0,mm0
 
@@ -47,7 +47,7 @@ section .functions_task03
 GLOBAL suma_quad_word
 
 suma_quad_word:
-
+xor ecx,ecx
 mov eax,[esp+4]
 mov ebx,CANT_DIGITOS
 add eax,16

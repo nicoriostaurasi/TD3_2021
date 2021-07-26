@@ -3,3 +3,4 @@
 void task02_main(tabla_digitos*);
 void task_02_show_VGA(tabla_digitos*);
 void task_sumatoria(tabla_digitos*);
+void task02_copy_digit(tabla_digitos*);

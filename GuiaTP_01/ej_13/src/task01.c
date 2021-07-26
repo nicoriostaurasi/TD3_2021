@@ -30,6 +30,12 @@ __attribute__(( section(".rodata")))int dummy_task01_rodata;
 __attribute__(( section(".data")))data_conv buffer_conv_T1;
 
 /**
+ * @brief Variable para hacer las presentacion en pantalla
+ * 
+ */
+__attribute__(( section(".data")))bits64 promedio_global;
+
+/**
  * @brief Funcion Principal
  * @return nada
  * @param tabla_digitos* td_p
@@ -39,7 +45,7 @@ __attribute__(( section(".functions_task01"))) void task01_main(tabla_digitos* t
       task_promedio(td_p);
       task_show_VGA(td_p);
       task_show_time((tiempos*) &__DATOS_TIMER_VMA_LIN);
-      task_read_mem(td_p);
+      //task_read_mem(td_p);
 }
 
 /**
@@ -53,9 +59,9 @@ __attribute__(( section(".functions_task01"))) void task_read_mem(tabla_digitos*
     byte aux;
     dword auxd;
     //lee hasta la posicion 0x1FFFFFFF = 536870912B = 512MB
-    if(td_p->promedio < 0x1FFFFFFF)
+    if(promedio_global < 0x1FFFFFFF)
     {   
-    auxd=td_p->promedio;
+    auxd=&promedio_global;
     aux=task01_read_k(auxd,1);
     }
 }
@@ -218,8 +224,8 @@ __attribute__(( section(".functions_task01"))) void task_show_VGA(tabla_digitos*
     static dword parte_alta=0,parte_baja=0; //palabras de 32 bits
     static byte aux=0;
     static int i=0;
-    parte_alta=(td_p->promedio & 0xFFFFFFFF00000000)>>32;
-    parte_baja=(td_p->promedio) & 0x00000000FFFFFFFF;
+    parte_alta=(promedio_global & 0xFFFFFFFF00000000)>>32;
+    parte_baja=(promedio_global) & 0x00000000FFFFFFFF;
     
     for(i=0;i<8;i++)
     {
@@ -258,16 +264,20 @@ __attribute__(( section(".functions_task01"))) void task_promedio(tabla_digitos*
 {
     /*acumula y promedia*/
     static int i=0;
+    static int j=0;
+    static bits64 sumatoria=0x0;
+    static bits64 promedio=0x0;
     data_conv* dc_p;
-    td_p->promedio=0x0000000000000000;
-    td_p->sumatoria=0x0000000000000000;
-    for(i=0;i<td_p->indice;i++)
+    promedio=0x0000000000000000;
+    sumatoria=0x0000000000000000;
+    j=task01_read_k(&(td_p->indice),1);
+    for(i=0;i<j;i++)
     {
-    td_p->sumatoria=td_p->sumatoria+td_p->digito[i];
+    sumatoria=sumatoria+task01_read_k(&(td_p->digito[i]),4);
     }
-    if(td_p->indice == 0)
+    if(j == 0)
     {
-        td_p->promedio=0x00;
+        promedio=0x00;
     }
     else
     {
@@ -275,10 +285,11 @@ __attribute__(( section(".functions_task01"))) void task_promedio(tabla_digitos*
         dc_p->dividendo=0x0000000000000000;
         dc_p->divisor=0x0000000000000000;
         dc_p->resultado=0x0000000000000000;
-        dc_p->dividendo=td_p->sumatoria;
-        dc_p->divisor=td_p->indice;
+        dc_p->dividendo=sumatoria;
+        dc_p->divisor=j;
         my_division64(dc_p);
-        td_p->promedio=dc_p->resultado;
+        promedio=dc_p->resultado;
+        promedio_global=promedio;
     }    
 }
 
