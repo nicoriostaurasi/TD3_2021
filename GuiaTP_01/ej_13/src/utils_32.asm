@@ -321,7 +321,7 @@ cargo_gdt_desde_codigo:
                     
                     ;P=1 Presente en el segmento
                     ;DPL=00 Privilegio nivel 0 - Kernel
-                    ;S=0 Descriptor de Codigo/Datos
+                    ;S=0 Descriptor de Sistema
                     
                     ;D/C=1 Segmento de Codigo 
                     ;ED=0 

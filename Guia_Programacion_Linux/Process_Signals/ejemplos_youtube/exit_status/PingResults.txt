@@ -1,0 +1,6 @@
+PING google.com (172.217.30.238) 56(84) bytes of data.
+64 bytes from eze04s04-in-f14.1e100.net (172.217.30.238): icmp_seq=1 ttl=115 time=5.51 ms
+
+--- google.com ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 5.513/5.513/5.513/0.000 ms
