@@ -38,12 +38,13 @@ int main(int argc,char* argv[])
     if(pid==0)
     {
         //Child
-        sleep(5);
+        sleep(15);
         kill(getppid(),SIGUSR1);
     }
     else
     {
         //Parent
+        printf("My PID es %d\n",getpid());
         struct sigaction sa={0};
         sa.sa_flags=SA_RESTART;
         sa.sa_handler=&handle_sigusr1;

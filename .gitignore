@@ -20,6 +20,7 @@
 !*.gitignore
 !*.md
 !*.pdf
+!*.py
 # Unignore all dirs
 !*/
 *.mod.c

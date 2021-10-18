@@ -39,8 +39,6 @@ int main(void)
         return 1;
     }
 
-
-
     if(PID==0)
     {           
         //Proceso Hijo
@@ -101,7 +99,7 @@ int main(void)
 
             if(flag_escritura==1)
             {
-            printf("Escribo!\n");
+            printf("Cambio detectado, al pipe!\n");
             write(fd_pipe[1],&cantidad_buff_hijo,sizeof(int));
             write(fd_pipe[1],buff_tx,cantidad_buff_hijo*sizeof(int));
             flag_escritura=0;
@@ -125,7 +123,6 @@ int main(void)
         FD_ZERO(&rfds);
         FD_SET(fd_pipe[1], &rfds);
         FD_SET(fd_pipe[0], &rfds);
-        
         tv.tv_sec = 0;
         tv.tv_usec = 0;    /* Tiempo de espera */
         err=select(fd_pipe[1]+1, &rfds, NULL, NULL, &tv);
@@ -133,7 +130,7 @@ int main(void)
         {
             if(FD_ISSET(fd_pipe[0],&rfds))
             {
-            printf("---------------Escribio!!\n");
+            printf("Nueva info por el pipe!\n");
             read(fd_pipe[0],&cantidad_pipe,sizeof(int));
             read(fd_pipe[0],buff_rx,cantidad_pipe*sizeof(int));
             printf("Conexiones: %d Clientes: %d\n",buff_rx[0],buff_rx[1]);
