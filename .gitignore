@@ -21,6 +21,8 @@
 !*.md
 !*.pdf
 !*.py
+!*.dts
+!*.dtb
 # Unignore all dirs
 !*/
 *.mod.c

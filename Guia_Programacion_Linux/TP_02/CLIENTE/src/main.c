@@ -29,6 +29,7 @@ void func(int sockfd)
   //-------------------
   //ahora debo levantar un cliente UDP para enviar un keep_alive cada 200mS
   //por otro lado debo escuchar el streaming de datos por parte del server
+  close(sockfd);
 
   struct sockaddr_in server_udp;
   int socket_udp;
@@ -77,7 +78,7 @@ void func(int sockfd)
 
 
 
-  close(sockfd);
+  close(socket_udp);
 }
    
 void dormir()

@@ -154,9 +154,28 @@ int main()
 
     if( bind( socket_host, (struct sockaddr*)&my_addr, sizeof(my_addr)) == -1 )
     {
-        printf("[SERVER]: El puerto está en uso \n");
+        /* desatachamos la shmem de nuestro espacio de direccionamiento*/    
+        if (shmdt(shm_addr) == -1) 
+        {
+            printf("[SERVER]: Error al desatachar la shmem\n");
+        }
+
+        /* desalojamos el segmento de memoria compartida*/
+        if (shmctl(shm_id, IPC_RMID, &shm_desc) == -1) 
+        {
+            printf("[SERVER]: Error al desalojar el segmento de shmem\n");
+        }
+
+        if(semctl(sem_set_id, 0, IPC_RMID)==-1)
+        {
+            printf("[SERVER]: Error al desalojar el semaforo\n");     
+        }
+
+        printf("[SERVER]: No se pudo bindear el puerto\n");
+        
         exit(1);
     }
+
 
     if(listen( socket_host, var_backlog) == -1 )
     {
@@ -226,7 +245,6 @@ int main()
             {
             if((socket_client = accept(socket_host,(struct sockaddr*)&client_addr,&size_addr))!= -1)
             {
-                printf("produjo acept\n");
                 switch ( childpid=fork() )
                 {
                     case -1:  /* Error con el FORK*/
@@ -243,6 +261,7 @@ int main()
                       {
                       printf("[SERVER]: Se ha conectado %s por su puerto %d\n", inet_ntoa(client_addr.sin_addr), client_addr.sin_port);
                       exitcode=AtiendeCliente(socket_client, client_addr,shm_addr,sem_set_id);
+                      close(socket_client);
                       }
                       else
                       {
@@ -304,12 +323,14 @@ int main()
         printf("[SERVER]: Error al desalojar el semaforo\n");     
     }
     printf("[SERVER]: Liberados recursos, fin de ejecución.\n");
-    close(socket_host);
+    if(close(socket_host)==-1)
+    {
+        printf("[SERVER]: Error al cerrar el socket\n");
+    }
     close(driver_pipe[0]);    
     close(driver_pipe[1]);    
-
     kill(PID_driver,SIGUSR2);
-    signal(SIGUSR2,SIG_IGN);
     kill(0,SIGALRM);
+
     return 0;
 }
