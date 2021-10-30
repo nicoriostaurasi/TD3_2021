@@ -125,48 +125,56 @@ irqreturn_t I2C_IRQ_Handler(int IRQ, void *ID, struct pt_regs *REG)
 {   
     static uint32_t status_aux,reg_aux;
 
-    static uint32_t data_tx_now=0;
+//    static uint32_t data_tx_now=0;
 
-    pr_info("[I2C_IRQ] LOG: TD3_I2C Recibida Interrupcion\n");
+//    pr_info("[I2C_IRQ] LOG: TD3_I2C Recibida Interrupcion\n");
+
+
 
     status_aux = ioread32(I2C2_Base+I2C_IRQSTATUS);
 
 
     if( (status_aux & RRDY_IE) == RRDY_IE )//Rx Interrupt
     {
-        pr_info("[I2C_IRQ] LOG: TD3_I2C Rx Interrupt\n");    
-        //Limpio Flags
-        //GC-XRDY-RRDY-ARDY-NACK-AL
-        //1 -  0 -  1 -  1 - 1  -0  
-        //0x2E
-        reg_aux = ioread32(I2C2_Base+I2C_IRQSTATUS);
-        reg_aux|=0x2E;
-        iowrite32(reg_aux,I2C2_Base+I2C_IRQSTATUS);
-
-        //Limpio Interrupcion
-        reg_aux = ioread32(I2C2_Base+I2C_IRQENABLE_CLR);
-        reg_aux|=RRDY_IE;
-        iowrite32(reg_aux,I2C2_Base+I2C_IRQENABLE_CLR);
+       // pr_info("[I2C_IRQ] LOG: TD3_I2C Rx Interrupt\n");
 
         //Read Data
-        I2C_data_rx=ioread8(I2C2_Base+I2C_DATA);
+        I2C_data_rx[data_rx_now]=ioread8(I2C2_Base+I2C_DATA);
+        data_rx_now++;
 
-        pr_info("[I2C_IRQ] LOG: TD3_I2C Rx Data 0x%x\n",I2C_data_rx);    
-        
+        if(data_rx_now == I2C_data_rx_length)
+        {
+            //Limpio Flags
+            //GC-XRDY-RRDY-ARDY-NACK-AL
+            //1 -  0 -  1 -  1 - 1  -0  
+            //0x2E
+            reg_aux = ioread32(I2C2_Base+I2C_IRQSTATUS);
+            reg_aux|=0x2E;
+            iowrite32(reg_aux,I2C2_Base+I2C_IRQSTATUS);
 
-        //Despierto proceso por RX        
-        I2C_WK_Cond = 1;
-        wake_up_interruptible(&I2C_WK);
+            //Limpio Interrupcion
+            reg_aux = ioread32(I2C2_Base+I2C_IRQENABLE_CLR);
+            reg_aux|=RRDY_IE;
+            iowrite32(reg_aux,I2C2_Base+I2C_IRQENABLE_CLR);
 
+
+     //       pr_info("[I2C_IRQ] LOG: TD3_I2C Rx Data 0x%x\n",I2C_data_rx);    
+
+
+            //Despierto proceso por RX        
+            I2C_WK_Cond = 1;
+            wake_up_interruptible(&I2C_WK);
+            data_rx_now=0;
+        }
     }
 
     if( (status_aux & XRDY_IE) == XRDY_IE )//Tx Interrupt
     {
-        pr_info("[I2C_IRQ] LOG: TD3_I2C Tx Interrupt\n");    
+  //      pr_info("[I2C_IRQ] LOG: TD3_I2C Tx Interrupt\n");    
 
         //Write Data
         iowrite8(I2C_data_tx[data_tx_now],I2C2_Base+I2C_DATA);
-        pr_info("[I2C_IRQ] LOG: TD3_I2C Tx Dato 0x%x\n",I2C_data_tx[data_tx_now]);    
+    //    pr_info("[I2C_IRQ] LOG: TD3_I2C Tx Dato 0x%x\n",I2C_data_tx[data_tx_now]);    
         
         data_tx_now++;
 
@@ -198,7 +206,7 @@ irqreturn_t I2C_IRQ_Handler(int IRQ, void *ID, struct pt_regs *REG)
     status_aux|= 0x6FFF;
     iowrite32(status_aux,I2C2_Base+I2C_IRQSTATUS);
     
-    pr_info("[I2C_IRQ] LOG: TD3_I2C Handler Resuelto!\n");    
+//    pr_info("[I2C_IRQ] LOG: TD3_I2C Handler Resuelto!\n");    
 
     return IRQ_HANDLED;
 }

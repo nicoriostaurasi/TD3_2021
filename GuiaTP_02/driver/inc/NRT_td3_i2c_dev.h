@@ -17,7 +17,8 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/of_platform.h>
-#include <linux/wait.h>             
+#include <linux/wait.h>
+#include <linux/slab.h>
 
 #define BASEMINOR       0
 #define COUNT           1
@@ -44,17 +45,21 @@ static ssize_t td3_i2c_read(struct file *filep, char *buffer, size_t len, loff_t
 static ssize_t td3_i2c_write(struct file *filep, const char *buffer, size_t len, loff_t *offset);
 static long td3_i2c_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
 static void I2C_WriteByte(uint8_t* data,uint8_t data_size);
-static uint8_t I2C_ReadByte(void);
+static uint8_t I2C_ReadByte(uint8_t* data,uint8_t data_size);
 static void MPU6050_init(void);
+static uint16_t MPU6050_Read_Data_Count_Fifo(void);
+
 
 
 //Pdevices
 static void __iomem *I2C2_Base, *CM_PER_Base, *CTRL_MODULE_Base;
 int virq;
 uint8_t* I2C_data_tx;
-uint8_t I2C_data_rx = 0;
+uint8_t* I2C_data_rx;
+uint8_t I2C_data_rx_length=0;
 uint8_t I2C_data_tx_length=0;
 uint8_t data_tx_now=0;
+uint8_t data_rx_now=0;
 
 //Fops
 int Gscale = 0;

@@ -20,9 +20,9 @@ int main()
     printf("Hola, soy el test de fops\n");
 
     int fp;
-    uint16_t* buff;
+    uint8_t* buff;
 
-    buff=malloc(sizeof(uint16_t));
+//    buff=malloc(sizeof(uint16_t));
 
     uint8_t* buff_escritura;
 
@@ -35,7 +35,7 @@ int main()
     printf("fp %d\n",fp);
 
     int j=0;
-
+/*
     for(j=0;j<50;j++)
     {
         *buff_escritura=AC_X;
@@ -72,9 +72,38 @@ int main()
         write(fp,buff_escritura,1);
         read(fp,buff,1);
         printf("gir z %.20f\n",250/( (float)*buff *32768 ));
-
-        usleep(500000);   
+        
+        usleep(500);
     }
+*/
+        buff=malloc(14*sizeof(uint8_t));
+        uint16_t acx,acy,acz,temp,girx,giry,girz;
+        int i;
+        for(i=0;i<1000;i++)
+        {
+        read(fp,buff,14);
+
+        temp=(0xFF&buff[0])<<8 | (0xFF&buff[1]);
+        girx=(0xFF&buff[2])<<8 | (0xFF&buff[3]);
+        giry=(0xFF&buff[4])<<8 | (0xFF&buff[5]);
+        girz=(0xFF&buff[6])<<8 | (0xFF&buff[7]);
+        acx=(0xFF&buff[8])<<8  | (0xFF&buff[9]);
+        acy=(0xFF&buff[10])<<8 | (0xFF&buff[11]);
+        acz=(0xFF&buff[12])<<8 | (0xFF&buff[13]);
+    
+
+    
+        printf("acx %.2f\t",(float)acx * ARES_2G);
+        printf("acy %.2f\t",(float)acy * ARES_2G);
+        printf("acz %.2f\t",(float)acz * ARES_2G);
+        printf("temp %.2f\t",((float)temp)/340+36.53);
+        printf("gir x %.10f\t",(250/( (float)girx *32768)) );
+        printf("gir y %.10f\t",(250/( (float)giry *32768)) );
+        printf("gir z %.10f\n",(250/( (float)girz*32768)) );
+
+//        printf("acx %x acy %x acz %x temp %x gir_x %x gir_y %x gir_z %x\n",acx,acy,acz,temp,girx,giry,girz);
+        }
+
     close(fp);
     return 0;
 }

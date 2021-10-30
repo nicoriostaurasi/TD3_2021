@@ -1,11 +1,17 @@
 #define MPU6050_ADDRESS             0x068
+#define MPU6050_RA_USER_CTRL        0x06A
 #define MPU6050_RA_PWR_MGMT_1       0x06B       
 #define MPU6050_RA_CONFIG           0x01A
 #define MPU6050_RA_SMPLRT_DIV       0x019       
 #define MPU6050_RA_GYRO_CONFIG      0x01B      
 #define MPU6050_RA_ACCEL_CONFIG     0x01C     
+#define MPU6050_RA_FIFO_EN          0x023
+#define MPU6050_RA_FIFO_COUNTH      0x072
+#define MPU6050_RA_FIFO_COUNTL      0x073
 #define MPU6050_RA_INT_PIN_CFG      0x037      
 #define MPU6050_RA_INT_ENABLE       0x038       
+#define MPU6050_RA_FIFO_R_W         0x074
+
 #define MPU6050_RA_ACCEL_XOUT_H     0x03B
 #define MPU6050_RA_ACCEL_XOUT_L     0x03C
 #define MPU6050_RA_ACCEL_YOUT_H     0x03D
