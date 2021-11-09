@@ -1,0 +1,1 @@
+int filtro(int* buffer,int largo, int muestra);

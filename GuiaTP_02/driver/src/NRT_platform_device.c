@@ -1,5 +1,20 @@
-//#include "../inc/NRT_td3_i2c_dev.h"
+/**
+ * @file NRT_platform_device.c
+ * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
+ * @brief Contiene el probe, el remove y el handler de interrupcion de I2C
+ * @version 0.1
+ * @date 03-11-2021
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 
+/**
+ * @brief Configura el pdevice
+ * 
+ * @param i2c_pd 
+ * @return int 
+ */
 static int td3_i2c_probe(struct platform_device* i2c_pd)
 {
     uint32_t reg_value_aux;
@@ -35,7 +50,7 @@ static int td3_i2c_probe(struct platform_device* i2c_pd)
         iounmap(CM_PER_Base);
         return 1;    
     }
-    pr_info("[PROBE] LOG: TD3_I2C CTRL_MODULE = 0x%x\n", (uint32_t) CTRL_MODULE_Base);
+    pr_info("[PROBE] LOG: TD3_I2C CTRL_MODULE = 0x%x\n", (uint32_t)CTRL_MODULE_Base);
 
     //-------------------------------------------------------------------------------------
     //Habilito Clock
@@ -100,7 +115,12 @@ static int td3_i2c_probe(struct platform_device* i2c_pd)
     return 0;
 }
 
-
+/**
+ * @brief Libera los recursos
+ * 
+ * @param i2c_pd 
+ * @return int 
+ */
 static int td3_i2c_remove(struct platform_device* i2c_pd)
 {
     pr_info("[REMOVE] LOG: TD3_I2C Removiendo modulo...\n");
@@ -121,6 +141,14 @@ static int td3_i2c_remove(struct platform_device* i2c_pd)
     return 0;
 }
 
+/**
+ * @brief Handler de interrupción
+ * 
+ * @param IRQ 
+ * @param ID 
+ * @param REG 
+ * @return irqreturn_t 
+ */
 irqreturn_t I2C_IRQ_Handler(int IRQ, void *ID, struct pt_regs *REG)
 {   
     static uint32_t status_aux,reg_aux;
@@ -196,7 +224,8 @@ irqreturn_t I2C_IRQ_Handler(int IRQ, void *ID, struct pt_regs *REG)
 
             //Despierto proceso por TX        
             I2C_WK_Cond = 1;
-            wake_up_interruptible(&I2C_WK);
+//            wake_up_interruptible(&I2C_WK);
+            wake_up(&I2C_WK);
             data_tx_now=0;
         }
     }

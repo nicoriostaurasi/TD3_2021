@@ -1,3 +1,14 @@
+/**
+ * @file NRT_globals.c
+ * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
+ * @brief Variables globales de utilidad
+ * @version 0.1
+ * @date 03-11-2021
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 static struct 
 {
     dev_t TD3_I2C_DEV;

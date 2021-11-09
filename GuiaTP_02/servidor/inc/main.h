@@ -17,6 +17,11 @@
 #include <string.h>
 #include <sys/ipc.h>     
 
+#include "driver_handler.h"
+#include "file_handler.h"
+#include "filtrado.h"
+#include "servidor.h"
+
 /*Puerto*/
 #define PORT       7000
 
@@ -37,20 +42,20 @@ typedef struct
 }data;
 
 typedef struct mediciones
-{
-    uint16_t raw_ac_x;
-    uint16_t raw_ac_y;
-    uint16_t raw_ac_z;
-    int16_t  raw_temp;
-    uint16_t raw_gy_x;
-    uint16_t raw_gy_y;
-    uint16_t raw_gy_z;
-
-    uint16_t mva_ac_x;
-    uint16_t mva_ac_y;
-    uint16_t mva_ac_z;
-    int16_t  mva_temp;
-    uint16_t mva_gy_x;
-    uint16_t mva_gy_y;
-    uint16_t mva_gy_z;
+{   
+    int16_t raw_ac_x;
+    int16_t raw_ac_y;
+    int16_t raw_ac_z;
+    int16_t raw_temp;
+    int16_t raw_gy_x;
+    int16_t raw_gy_y;
+    int16_t raw_gy_z;
+    
+    int16_t mva_ac_x;
+    int16_t mva_ac_y;
+    int16_t mva_ac_z;
+    int16_t mva_temp;
+    int16_t mva_gy_x;
+    int16_t mva_gy_y;
+    int16_t mva_gy_z;
 }mediciones;

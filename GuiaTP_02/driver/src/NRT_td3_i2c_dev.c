@@ -1,3 +1,14 @@
+/**
+ * @file NRT_td3_i2c_dev.c
+ * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
+ * @brief Archivo principal del modulo, contiene el init y el exit
+ * @version 0.1
+ * @date 03-11-2021
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #include "../inc/NRT_td3_i2c_dev.h"
 #include "../inc/BBB_I2C_reg.h"
 #include "../inc/MPU6050_reg.h"
@@ -5,12 +16,19 @@
 #include "NRT_file_operations.c"
 #include "NRT_globals.c"
 #include "NRT_platform_device.c"
+#include "NRT_mpu_6050.c"
+#include "NRT_i2c_rw.c"
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Nicolas Rios Taurasi");
 MODULE_VERSION("1.0");
 MODULE_DESCRIPTION("Driver i2c");
 
+/**
+ * @brief Funcion de inicializacion
+ * 
+ * @return int 
+ */
 static int __init i2c_init(void)
 {
     int estado=0;
@@ -116,6 +134,11 @@ static int change_permission_cdev(struct device *dev,struct kobj_uevent_env *env
     return 0; 
 }
 
+
+/**
+ * @brief Funcion de exit
+ * 
+ */
 static void __exit i2c_exit(void)
 {
     pr_info("[EXIT] LOG: TD3_I2C Removiendo modulo...\n");

@@ -44,8 +44,8 @@ static int td3_i2c_close(struct inode *inode, struct file *filp);
 static ssize_t td3_i2c_read(struct file *filep, char *buffer, size_t len, loff_t *offset);
 static ssize_t td3_i2c_write(struct file *filep, const char *buffer, size_t len, loff_t *offset);
 static long td3_i2c_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
-static void I2C_WriteByte(uint8_t* data,uint8_t data_size);
-static uint8_t I2C_ReadByte(uint8_t* data,uint8_t data_size);
+static void I2C_Write_n_Bytes(uint8_t* data,uint8_t data_size);
+static uint8_t I2C_Read_n_Bytes(uint8_t* data,uint32_t data_size);
 static void MPU6050_init(void);
 static uint16_t MPU6050_Read_Data_Count_Fifo(void);
 
@@ -68,7 +68,9 @@ int Aaxis = 1;
 enum MeasureState{AC_X,AC_Y,AC_Z,TEMP,GY_X,GY_Y,GY_Z};
 typedef enum MeasureState MeasureState;
 MeasureState MState;
-
+enum ioctl_state{AC_2G,AC_4G,AC_8G,AC_16G,GY_250,GY_500,GY_1000,GY_2000};
+typedef enum ioctl_state ioctl_state;
+ioctl_state IOCState;
 
 volatile int I2C_WK_Cond = 0;
 wait_queue_head_t I2C_WK = __WAIT_QUEUE_HEAD_INITIALIZER(I2C_WK);

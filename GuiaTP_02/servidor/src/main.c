@@ -1,14 +1,23 @@
-#include "../inc/driver_dummy.h"
+/**
+ * @file main.c
+ * @author Nicolas Rios Taurasi (nicoriostaurasi@frba.utn.edu.ar)
+ * @brief Archivo principal del servidor, se encarga de levantar a los hijos y crear los demas recursos
+ * @version 0.1
+ * @date 02-11-2021
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 
+#include "../inc/main.h"
 
 volatile int file_update=0;                    
 
 volatile int activated=1;                    /*Variable del superlazo*/
  
 void handle_sigkill(int s)
-{
-    
-    printf("[SERVER]: Control C por consola\n",getpid());
+{    
+    printf("[SERVER]: Control C por consola\n");
     activated=0;
     return;
 }
@@ -68,7 +77,6 @@ int main()
 
     //----------------------------------------------------------------------------------------
     /*Alojo la SHMEM 512 bytes*/
-
 //    shm_id = shmget("memoria", 512, IPC_CREAT | IPC_EXCL | 0600);
     shm_id = shmget(IPC_PRIVATE, 512, IPC_CREAT | IPC_EXCL | 0600);
     if (shm_id == -1) 
@@ -120,10 +128,10 @@ int main()
 
     if(PID_driver==0)
     {
-    signal(SIGINT,SIG_IGN);
-    printf("[SERVER]: Se creo un hijo para leer el driver %d\n",getpid());
-    colector_sensor(driver_pipe,shm_addr,sem_set_id);
-    exit(0);
+        signal(SIGINT,SIG_IGN);
+        printf("[SERVER]: Se creo un hijo para leer el driver %d\n",getpid());
+        colector_sensor(driver_pipe,shm_addr,sem_set_id);
+        exit(0);
     }
 
 
@@ -187,7 +195,7 @@ int main()
     size_addr = sizeof(struct sockaddr_in);
     //----------------------------------------------------------------------------------------
 
-    printf("[SERVER]: Se ha configurado el socket en IP: %s y Puerto: %d\n",inet_ntoa(my_addr.sin_addr),(int) ntohs(my_addr.sin_port));
+    printf("[SERVER]: Se ha configurado el socket en IP: 192.168.1.48 y Puerto: %d\n",(int) ntohs(my_addr.sin_port));
     printf("[SERVER]: Ya se puede escuchar a los multiples clientes\n");
 
     struct sigaction muerte;
