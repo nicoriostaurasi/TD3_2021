@@ -59,3 +59,9 @@ typedef struct mediciones
     int16_t mva_gy_y;
     int16_t mva_gy_z;
 }mediciones;
+
+typedef union smun{
+    int val;
+    struct semid_ds *buff;
+    unsigned short *array;
+}smun;

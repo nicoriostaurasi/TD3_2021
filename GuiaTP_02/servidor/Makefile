@@ -19,6 +19,9 @@ clean:
 run:
 	$(BINPATH)$(EJ_NAME)
 
-asm:
+asm_ofast:
+	gcc -S -Ofast $(SRCPATH)filtrado.c
+
+asm_simple:
 	gcc -S $(SRCPATH)filtrado.c
 

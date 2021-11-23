@@ -17,22 +17,22 @@
  * @param muestra 
  * @return int 
  */
-int filtro(int* buffer,int largo, int muestra)
+int filtro(int *buffer, int largo, int muestra)
 {
-  int aux=0;
+  int aux = 0;
   int i;
 
-  for(i=0;i<(largo-1);i++)
+  for (i = 0; i < (largo - 1); i++)
   {
-  buffer[largo-(i+1)]=buffer[largo-(i+1)-1];
+    buffer[largo - (i + 1)] = buffer[largo - (i + 1) - 1];
   }
 
-  buffer[0]=muestra;
+  buffer[0] = muestra;
 
-  for(i=0;i<largo;i++)
+  for (i = 0; i < largo; i++)
   {
-    aux=aux+buffer[i];
+    aux = aux + buffer[i];
   }
-  aux=(int)(aux/largo);  
+  aux = (int)(aux / largo);
   return aux;
 }

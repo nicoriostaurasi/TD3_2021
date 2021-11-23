@@ -20,7 +20,7 @@ rebuild: rmmod all
 
 #Revisa si el modulo esta instalado
 cat:
-	cat /proc/module | grep $(MOD_NAME)
+	cat /proc/modules | grep $(MOD_NAME)
 
 #instala el modulo
 insmod:
