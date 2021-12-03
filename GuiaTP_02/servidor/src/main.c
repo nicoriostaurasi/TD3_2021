@@ -40,13 +40,17 @@ void handle_sigchild(int s)
 {
     int pidstatus; /*Variable que revisa un hijo finalizo ejecución*/
     int childpid;
-    childpid = waitpid(0, &pidstatus, WNOHANG);
-    if (childpid > 0)
+    do
     {
-        childcount--; /* Se acaba de morir un hijo */
-        printf("[SERVER]: Se desconecto un cliente PID:%d \n", childpid);
-        printf("[SERVER]: Hijos Actuales:%d \n", childcount);
+        childpid = waitpid(0, &pidstatus, WNOHANG);
+        if (childpid > 0)
+        {
+            childcount--; /* Se acaba de morir un hijo */
+            printf("[SERVER]: Se desconecto un cliente PID:%d \n", childpid);
+            printf("[SERVER]: Hijos Actuales:%d \n", childcount);
+        }
     }
+    while(childpid>0);
     return;
 }
 
@@ -120,7 +124,7 @@ int main()
     {
         if (semop(sem_set_id, &sb, 1) == -1)
         {
-            semctl(sem_set_id, 0, IPC_RMID);
+           // semctl(sem_set_id, 0, IPC_RMID);
         }
     }
     //----------------------------------------------------------------------------------------

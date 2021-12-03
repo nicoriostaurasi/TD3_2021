@@ -27,6 +27,9 @@ void handler_driver_sigusr2(int signal)
  */
 void colector_sensor(int *fd_pipe, char *shm_addr, int sem_set_id, struct sembuf sb)
 {
+  // Para el control del semaforo
+  union smun arg;
+
   //Vector de datos
   char vector_data[238];
   //Variables de datos
@@ -94,15 +97,11 @@ void colector_sensor(int *fd_pipe, char *shm_addr, int sem_set_id, struct sembuf
     exit(1);
   }
 
-  sb.sem_flg = SEM_UNDO;
+ 
   sb.sem_num = 0;
-  sb.sem_op = -1;
+  arg.val = 0;
 
-  if (semop(sem_set_id, &sb, 1) == -1)
-  {
-    printf("[SERVER]: Error al tomar el semaforo 0\n");
-    exit(1);
-  }
+  semctl(sem_set_id,sb.sem_num,SETVAL,arg);
 
   while (colector_fin)
   {
@@ -171,12 +170,8 @@ void colector_sensor(int *fd_pipe, char *shm_addr, int sem_set_id, struct sembuf
     //cambio de semaforo
 
     //Libero el semaforo
-    sb.sem_op = 1;
-    if (semop(sem_set_id, &sb, 1) == -1)
-    {
-      printf("[SERVER]: Error al liberar el semaforo\n");
-      exit(1);
-    }
+    arg.val = 1;
+    semctl(sem_set_id,sb.sem_num,SETVAL,arg);
 
     //Toggleo el numero de semaforo
     if (sb.sem_num == 0)
@@ -185,12 +180,8 @@ void colector_sensor(int *fd_pipe, char *shm_addr, int sem_set_id, struct sembuf
       sb.sem_num = 0;
 
     //Tomo el otro semaforo
-    sb.sem_op = -1;
-    if (semop(sem_set_id, &sb, 1) == -1)
-    {
-      printf("[SERVER]: Error al tomar el semaforo\n");
-      exit(1);
-    }
+    arg.val = 0;
+    semctl(sem_set_id,sb.sem_num,SETVAL,arg);
   }
   close(fp_driver);
   close(fd_pipe[0]);
